@@ -475,7 +475,17 @@ async function boot() {
       else { UI.view = 'admin'; s.at = Date.now(); save(); }
     } else if (s) { DEV.session = null; save(); }
   }
-  try { history.replaceState({ v: 'root' }, ''); history.pushState({ v: UI.view }, ''); } catch (e) {}
+  // đường dẫn nhanh từ trang giới thiệu (landing): #register, #demo, #admin, #members, #legal
+  const dl = !m && (location.hash.match(/^#(register|demo|admin|members|legal)$/) || [])[1];
+  if (dl) {
+    const c = club(), live = UI.view === 'member' || UI.view === 'admin';
+    if (dl === 'register') Object.assign(UI, { view: 'register', reg: { step: 1, days: [], time: '19:00' } });
+    else if (dl === 'demo') { const d = await seedDemo(); DEV.clubId = d.id; DEV.session = null; save(); UI.view = 'profiles'; setTimeout(() => toast('Đã mở hội mẫu. Chọn tên hoặc đăng nhập quản trị.'), 50); }
+    else if (dl === 'admin' && UI.view !== 'admin') UI.view = 'adminLogin';
+    else if (dl === 'members' && !live) UI.view = c ? 'profiles' : 'clubs';
+    else if (dl === 'legal') Object.assign(UI, { view: 'legal', legalBack: live ? UI.view : 'welcome' });
+  }
+  try { history.replaceState({ v: 'root' }, '', dl ? location.pathname + location.search : undefined); history.pushState({ v: UI.view }, ''); } catch (e) {}
   render();
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 }

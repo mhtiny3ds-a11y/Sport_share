@@ -1,6 +1,6 @@
 /* Sport Share service worker: lưu sẵn vỏ ứng dụng để mở được khi mất mạng. */
-const CACHE = 'sportshare-v2';
-const SHELL = ['./', 'index.html', 'css/app.css?v=2', 'js/qrcode.js?v=2', 'js/core.js?v=2', 'js/views.js?v=2', 'js/app.js?v=2', 'manifest.webmanifest', 'icon.svg', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'huong-dan-su-dung.pdf?v=1',
+const CACHE = 'sportshare-v3';
+const SHELL = ['./', 'index.html', 'css/app.css?v=3', 'js/qrcode.js?v=3', 'js/core.js?v=3', 'js/views.js?v=3', 'js/app.js?v=3', 'manifest.webmanifest', 'icon.svg', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'huong-dan-su-dung.pdf?v=1',
   'fonts/be-vietnam-pro-vietnamese-400-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-600-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-700-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-800-normal.woff2',
   'fonts/be-vietnam-pro-latin-400-normal.woff2', 'fonts/be-vietnam-pro-latin-600-normal.woff2', 'fonts/be-vietnam-pro-latin-700-normal.woff2', 'fonts/be-vietnam-pro-latin-800-normal.woff2'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

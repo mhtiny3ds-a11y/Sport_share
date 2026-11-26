@@ -103,7 +103,7 @@ function vWelcome() {
   </div>
   ${hasReal ? '' : `<div class="demo">Muốn xem thử? <button class="link" data-act="demo">Mở hội mẫu</button><br>Quản trị: <b>demo</b> / <b>123456</b> · PIN quản trị <b>0000</b> · Minh Quân: PIN <b>1111</b> · Thu Lan: PIN <b>2222</b></div>`}
   <div class="stack" style="gap:8px"><p class="tiny muted center b">Dùng máy mới? Khôi phục dữ liệu hội từ file sao lưu:</p>${restoreBlock(false)}</div>
-  <p class="foot">${n ? `Máy này đang lưu ${n} hội. ` : ''}Dữ liệu chỉ nằm trong trình duyệt của máy này. <button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button></p>`;
+  <p class="foot">${n ? `Máy này đang lưu ${n} hội. ` : ''}Dữ liệu chỉ nằm trong trình duyệt của máy này. <button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button> · <a class="link" href="landing/">Giới thiệu Sport Share</a></p>`;
 }
 function restoreBlock(withExport) {
   return `<div class="row wrap" style="justify-content:${withExport ? 'flex-start' : 'center'}">${withExport ? '<button class="btn sm ok" data-act="exportData">⬇️ Tải file sao lưu</button>' : ''}<label class="btn sm ghost" for="importFile" style="cursor:pointer">⬆️ Khôi phục từ file</label><input type="file" id="importFile" accept="application/json,.json" hidden></div>

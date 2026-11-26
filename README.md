@@ -9,6 +9,21 @@ Web app **miễn phí, không quảng cáo, không cần máy chủ** để qu�
 | 🛡️ **Quản trị viên** | Số điện thoại/email + mật khẩu, hoặc PIN quản trị 4 số | Tạo buổi, điểm danh, nhập chi phí, chia tiền, chia đội, chốt công nợ, thu quỹ, quản lý hội viên, cài đặt |
 | 🏃 **Hội viên** | Chọn tên + mã PIN 4 số | Xem lịch, đăng ký tham gia / báo vắng, xem số tiền phải trả, quét VietQR, bảng xếp hạng chuyên cần |
 
+## Trang giới thiệu (landing page)
+
+Thư mục [`landing/`](landing/) là trang giới thiệu Sport Share, chạy tại `https://<tài-khoản>.github.io/<repo>/landing/` khi bật GitHub Pages. Mọi nút trên landing dẫn vào web app và mở đúng màn hình:
+
+| Đường dẫn | Mở màn hình |
+|---|---|
+| `…/` | Màn hình đầu |
+| `…/#register` | Lập hội mới (bước chọn môn thể thao) |
+| `…/#demo` | Tạo và mở hội mẫu |
+| `…/#admin` | Quản trị viên đăng nhập |
+| `…/#members` | Hội viên chọn tên |
+| `…/#legal` | Chính sách & Điều khoản |
+
+Muốn đưa landing sang một repo/tên miền riêng: chép nguyên thư mục `landing/` (đã có sẵn ảnh, font, icon) và sửa biến `APP_URL` ở cuối `landing/index.html` thành địa chỉ web app.
+
 ## Hướng dẫn sử dụng
 
 File [`huong-dan-su-dung.pdf`](huong-dan-su-dung.pdf) (12 trang, có ảnh minh họa) mở được ngay từ nút **📘 Hướng dẫn sử dụng** ở màn hình đầu của app. Nguồn để chỉnh sửa nằm trong `docs/guide/`.
