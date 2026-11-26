@@ -96,14 +96,14 @@ function vWelcome() {
     <div class="sportstrip" aria-hidden="true">${Object.values(SPORTS).slice(0, 8).map(s => `<span>${s.ic}</span>`).join('')}</div>
   </section>
   <div class="stack">
-    <a class="guide" href="huong-dan-su-dung.pdf?v=1" target="_blank" rel="noopener"><span class="gi" aria-hidden="true">📘</span><span class="grow"><span class="gt">Hướng dẫn sử dụng</span><span class="gs">Đọc trước khi dùng · PDF có hình minh họa</span></span><span class="go"><span class="gol">Mở PDF </span>↗</span></a>
+    <a class="guide" href="../huong-dan-su-dung.pdf?v=1" target="_blank" rel="noopener"><span class="gi" aria-hidden="true">📘</span><span class="grow"><span class="gt">Hướng dẫn sử dụng</span><span class="gs">Đọc trước khi dùng · PDF có hình minh họa</span></span><span class="go"><span class="gol">Mở PDF </span>↗</span></a>
     <button class="choice" data-act="toMembers"><span class="ic" style="background:var(--sky-soft)">🏃</span><span><b>Hội viên vào xem</b><span class="tiny muted b">${c ? 'Hội: ' + esc(c.name) : 'Chọn tên mình và nhập mã PIN 4 số'}</span></span></button>
     <button class="choice" data-act="go" data-v="adminLogin"><span class="ic" style="background:var(--ok-soft)">🛡️</span><span><b>Quản trị viên đăng nhập</b><span class="tiny muted b">Tạo buổi, điểm danh, chia tiền, thu công nợ</span></span></button>
     <button class="choice" data-act="startReg"><span class="ic" style="background:color-mix(in srgb,var(--brand) 16%,var(--surface))">⚡</span><span><b>Lập hội mới</b><span class="tiny muted b">Chọn môn thể thao · thêm hội viên · mỗi người một mã PIN</span></span></button>
   </div>
   ${hasReal ? '' : `<div class="demo">Muốn xem thử? <button class="link" data-act="demo">Mở hội mẫu</button><br>Quản trị: <b>demo</b> / <b>123456</b> · PIN quản trị <b>0000</b> · Minh Quân: PIN <b>1111</b> · Thu Lan: PIN <b>2222</b></div>`}
   <div class="stack" style="gap:8px"><p class="tiny muted center b">Dùng máy mới? Khôi phục dữ liệu hội từ file sao lưu:</p>${restoreBlock(false)}</div>
-  <p class="foot">${n ? `Máy này đang lưu ${n} hội. ` : ''}Dữ liệu chỉ nằm trong trình duyệt của máy này. <button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button> · <a class="link" href="landing/">Giới thiệu Sport Share</a></p>`;
+  <p class="foot">${n ? `Máy này đang lưu ${n} hội. ` : ''}Dữ liệu chỉ nằm trong trình duyệt của máy này. <button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button> · <a class="link" href="../">Giới thiệu Sport Share</a></p>`;
 }
 function restoreBlock(withExport) {
   return `<div class="row wrap" style="justify-content:${withExport ? 'flex-start' : 'center'}">${withExport ? '<button class="btn sm ok" data-act="exportData">⬇️ Tải file sao lưu</button>' : ''}<label class="btn sm ghost" for="importFile" style="cursor:pointer">⬆️ Khôi phục từ file</label><input type="file" id="importFile" accept="application/json,.json" hidden></div>

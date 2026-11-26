@@ -9,24 +9,30 @@ Web app **miễn phí, không quảng cáo, không cần máy chủ** để qu�
 | 🛡️ **Quản trị viên** | Số điện thoại/email + mật khẩu, hoặc PIN quản trị 4 số | Tạo buổi, điểm danh, nhập chi phí, chia tiền, chia đội, chốt công nợ, thu quỹ, quản lý hội viên, cài đặt |
 | 🏃 **Hội viên** | Chọn tên + mã PIN 4 số | Xem lịch, đăng ký tham gia / báo vắng, xem số tiền phải trả, quét VietQR, bảng xếp hạng chuyên cần |
 
-## Trang giới thiệu (landing page)
+## Địa chỉ
 
-Thư mục [`landing/`](landing/) là trang giới thiệu Sport Share, chạy tại `https://<tài-khoản>.github.io/<repo>/landing/` khi bật GitHub Pages. Mọi nút trên landing dẫn vào web app và mở đúng màn hình:
+| Địa chỉ | Nội dung |
+|---|---|
+| `sportshare.pro.vn/` (hoặc `…github.io/Sport_share/`) | Trang giới thiệu (landing page) |
+| `…/app/` | Web app Sport Share |
+| `…/huong-dan-su-dung.pdf` | Hướng dẫn sử dụng |
+
+Các nút trên landing dẫn vào app và mở đúng màn hình:
 
 | Đường dẫn | Mở màn hình |
 |---|---|
-| `…/` | Màn hình đầu |
-| `…/#register` | Lập hội mới (bước chọn môn thể thao) |
-| `…/#demo` | Tạo và mở hội mẫu |
-| `…/#admin` | Quản trị viên đăng nhập |
-| `…/#members` | Hội viên chọn tên |
-| `…/#legal` | Chính sách & Điều khoản |
+| `…/app/` | Màn hình đầu |
+| `…/app/#register` | Lập hội mới (bước chọn môn thể thao) |
+| `…/app/#demo` | Tạo và mở hội mẫu |
+| `…/app/#admin` | Quản trị viên đăng nhập |
+| `…/app/#members` | Hội viên chọn tên |
+| `…/app/#legal` | Chính sách & Điều khoản |
 
-Muốn đưa landing sang một repo/tên miền riêng: chép nguyên thư mục `landing/` (đã có sẵn ảnh, font, icon) và sửa biến `APP_URL` ở cuối `landing/index.html` thành địa chỉ web app.
+Link cũ tạo trước khi app chuyển vào `/app/` (link xem nhanh `…/#s=…` và các đường dẫn trên khi không có `app/`) được landing tự chuyển sang app.
 
 ## Hướng dẫn sử dụng
 
-File [`huong-dan-su-dung.pdf`](huong-dan-su-dung.pdf) (12 trang, có ảnh minh họa) mở được ngay từ nút **📘 Hướng dẫn sử dụng** ở màn hình đầu của app. Nguồn để chỉnh sửa nằm trong `docs/guide/`.
+File [`huong-dan-su-dung.pdf`](huong-dan-su-dung.pdf) (12 trang, có ảnh minh họa) mở được từ nút **📘 Hướng dẫn sử dụng** ở màn hình đầu của app và nút **Hướng dẫn** trên landing. Nguồn để chỉnh sửa nằm trong `docs/guide/`.
 
 ## Tính năng
 
@@ -45,9 +51,11 @@ File [`huong-dan-su-dung.pdf`](huong-dan-su-dung.pdf) (12 trang, có ảnh minh 
 
 1. Vào **Settings → Pages** của repository.
 2. Ở **Source** chọn **Deploy from a branch**, chọn nhánh chứa code (ví dụ `main`), thư mục `/ (root)`, bấm **Save**.
-3. Sau khoảng 1 phút, app chạy tại `https://<tên-tài-khoản>.github.io/<tên-repo>/`.
+3. Sau khoảng 1 phút, landing chạy tại `https://<tên-tài-khoản>.github.io/<tên-repo>/`, app tại `…/app/`.
 
-Chạy thử trên máy: `python3 -m http.server 8000` rồi mở `http://localhost:8000`.
+**Tên miền riêng (`sportshare.pro.vn`)**: ở nhà cung cấp tên miền thêm 4 bản ghi A cho `@` trỏ tới `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` và bản ghi CNAME `www` → `<tên-tài-khoản>.github.io`; rồi nhập tên miền ở **Settings → Pages → Custom domain** và bật **Enforce HTTPS**.
+
+Chạy thử trên máy: `python3 -m http.server 8000` rồi mở `http://localhost:8000` (landing) và `http://localhost:8000/app/` (app).
 
 ## Hội mẫu
 
@@ -66,17 +74,21 @@ Bấm **Mở hội mẫu** ở màn hình đầu (tự ẩn khi máy đã có h�
 ## Cấu trúc
 
 ```
-index.html            trang gốc
-css/app.css           giao diện (phong cách thể thao, sáng/tối)
-js/core.js            dữ liệu, môn thể thao, tính tiền, VietQR, hội mẫu
-js/views.js           các màn hình
-js/app.js             hành động, biểu mẫu, link chia sẻ, sao lưu, khởi động
-js/qrcode.js          thư viện tạo mã QR (MIT, Kazuhiko Arase)
-fonts/                Be Vietnam Pro (SIL OFL 1.1, xem OFL-fonts.txt)
-sw.js, manifest.webmanifest, icon*.png   PWA
+index.html                 trang giới thiệu (landing page)
+img/, fonts/, icon.svg…    ảnh chụp app, font và icon của landing
+sw.js                      dọn service worker cũ (khi app còn nằm ở gốc)
+huong-dan-su-dung.pdf      hướng dẫn sử dụng; nguồn trong docs/guide/
+app/index.html             web app
+app/css/app.css            giao diện app (phong cách thể thao, sáng/tối)
+app/js/core.js             dữ liệu, môn thể thao, tính tiền, VietQR, hội mẫu
+app/js/views.js            các màn hình
+app/js/app.js              hành động, biểu mẫu, link chia sẻ, sao lưu, khởi động
+app/js/qrcode.js           thư viện tạo mã QR (MIT, Kazuhiko Arase)
+app/fonts/                 Be Vietnam Pro (SIL OFL 1.1, xem OFL-fonts.txt)
+app/sw.js, app/manifest.webmanifest, app/icon*.png   PWA
 ```
 
-Thông tin nhận ủng hộ nằm ở hằng `DONATE` trong `js/core.js`.
+Thông tin nhận ủng hộ nằm ở hằng `DONATE` trong `app/js/core.js`.
 
 ## Giấy phép bên thứ ba
 
