@@ -96,6 +96,7 @@ function vWelcome() {
     <div class="sportstrip" aria-hidden="true">${Object.values(SPORTS).slice(0, 8).map(s => `<span>${s.ic}</span>`).join('')}</div>
   </section>
   <div class="stack">
+    <a class="guide" href="huong-dan-su-dung.pdf?v=1" target="_blank" rel="noopener"><span class="gi" aria-hidden="true">📘</span><span class="grow"><span class="gt">Hướng dẫn sử dụng</span><span class="gs">Đọc trước khi dùng · PDF có hình minh họa</span></span><span class="go"><span class="gol">Mở PDF </span>↗</span></a>
     <button class="choice" data-act="toMembers"><span class="ic" style="background:var(--sky-soft)">🏃</span><span><b>Hội viên vào xem</b><span class="tiny muted b">${c ? 'Hội: ' + esc(c.name) : 'Chọn tên mình và nhập mã PIN 4 số'}</span></span></button>
     <button class="choice" data-act="go" data-v="adminLogin"><span class="ic" style="background:var(--ok-soft)">🛡️</span><span><b>Quản trị viên đăng nhập</b><span class="tiny muted b">Tạo buổi, điểm danh, chia tiền, thu công nợ</span></span></button>
     <button class="choice" data-act="startReg"><span class="ic" style="background:color-mix(in srgb,var(--brand) 16%,var(--surface))">⚡</span><span><b>Lập hội mới</b><span class="tiny muted b">Chọn môn thể thao · thêm hội viên · mỗi người một mã PIN</span></span></button>

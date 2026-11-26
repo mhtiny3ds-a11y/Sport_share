@@ -153,6 +153,19 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .choice b{font-size:17px;font-weight:800;display:block}
 .choice .tiny{display:block}
 
+/* nút hướng dẫn sử dụng (màn hình đầu) */
+.guide{display:flex;align-items:center;gap:14px;padding:14px 14px 14px 16px;border-radius:var(--r-lg);background:var(--volt);color:var(--volt-ink);text-decoration:none;box-shadow:0 4px 0 color-mix(in srgb,var(--volt) 50%,#000),0 14px 28px -14px rgba(11,29,51,.5);position:relative;overflow:hidden;isolation:isolate}
+.guide::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(-62deg,transparent 0 22px,rgba(11,29,51,.06) 22px 44px);z-index:-1}
+.guide:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--volt) 50%,#000)}
+.guide .gi{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:28px;background:var(--navy);flex:none;position:relative}
+.guide .gi::after{content:"";position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--brand);border:2px solid var(--volt)}
+.guide .gt{display:block;font-weight:800;font-style:italic;text-transform:uppercase;font-size:18px;letter-spacing:-.01em;line-height:1.1}
+.guide .gs{display:block;font-size:13px;font-weight:700;opacity:.8;margin-top:3px}
+.guide .go{flex:none;background:var(--navy);color:#fff;font-weight:800;font-size:13px;padding:8px 10px;border-radius:10px;white-space:nowrap}
+.guide .gt{white-space:nowrap}
+@media (max-width:440px){.guide{gap:12px}.guide .gol{display:none}.guide .go{width:38px;height:38px;padding:0;display:grid;place-items:center;font-size:18px;border-radius:50%}.guide .gt{font-size:17px}}
+@media (max-width:350px){.guide .gt{white-space:normal}}
+
 /* ===== sport picker ===== */
 .sports{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .sport{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px 12px;border-radius:var(--r-lg);background:var(--surface);border:2px solid var(--line);font-weight:800;font-size:13px;text-align:center;position:relative}

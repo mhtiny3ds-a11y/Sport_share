@@ -1,0 +1,210 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>Sport Share · Hướng dẫn sử dụng</title>
+<style>
+@font-face{font-family:BVP;font-weight:400;src:url(../../fonts/be-vietnam-pro-vietnamese-400-normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:BVP;font-weight:400;src:url(../../fonts/be-vietnam-pro-latin-400-normal.woff2);unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:BVP;font-weight:600;src:url(../../fonts/be-vietnam-pro-vietnamese-600-normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:BVP;font-weight:600;src:url(../../fonts/be-vietnam-pro-latin-600-normal.woff2);unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:BVP;font-weight:800;src:url(../../fonts/be-vietnam-pro-vietnamese-800-normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:BVP;font-weight:800;src:url(../../fonts/be-vietnam-pro-latin-800-normal.woff2);unicode-range:U+0000-00FF,U+2000-206F}
+@page{size:A4;margin:16mm 15mm 16mm}
+*{box-sizing:border-box}
+body{margin:0;font-family:BVP,system-ui,sans-serif;font-size:10.5pt;line-height:1.55;color:#0B1D33;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+h1,h2,h3{margin:0;line-height:1.15}
+.cover{height:265mm;background:#0B1D33;color:#fff;border-radius:8mm;padding:20mm 16mm;position:relative;overflow:hidden;break-after:page;display:flex;flex-direction:column}
+.cover::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(-62deg,transparent 0 14mm,rgba(255,255,255,.04) 14mm 28mm)}
+.cover::after{content:"";position:absolute;right:-30mm;bottom:-30mm;width:110mm;height:110mm;border-radius:50%;border:9mm solid #C6F432;opacity:.2}
+.cover>*{position:relative;z-index:1}
+.speed{display:inline-block;background:#C6F432;color:#0B1D33;font-weight:800;font-size:9pt;letter-spacing:.1em;text-transform:uppercase;padding:2mm 4mm;border-radius:2mm;transform:skewX(-12deg);align-self:flex-start}
+.brand{font-size:60pt;font-weight:800;font-style:italic;text-transform:uppercase;line-height:.92;letter-spacing:-.02em;margin-top:12mm}
+.brand b{color:#FF5A1F}
+.ct{font-size:24pt;font-weight:800;font-style:italic;text-transform:uppercase;margin-top:10mm}
+.cs{font-size:12pt;opacity:.85;margin-top:3mm;max-width:130mm;font-weight:600}
+.toc{margin-top:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:5mm;padding:7mm 8mm;columns:2;column-gap:10mm;font-weight:600}
+.toc p{margin:0 0 2mm;break-inside:avoid}.toc b{color:#C6F432;margin-right:2mm}
+.sports{font-size:22pt;margin-top:8mm;letter-spacing:3mm}
+.part{break-before:page;background:#0B1D33;color:#fff;border-radius:5mm;padding:7mm 9mm;margin-bottom:6mm;position:relative;overflow:hidden}
+.part::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1.6mm;background:linear-gradient(90deg,#FF5A1F 0 60%,#C6F432 60% 80%,transparent 80%)}
+.part .n{color:#C6F432;font-weight:800;font-size:10pt;letter-spacing:.14em;text-transform:uppercase}
+.part h1{font-size:24pt;font-style:italic;text-transform:uppercase;font-weight:800}
+.part p{opacity:.85;font-weight:600;margin:2mm 0 0}
+h2{font-size:14pt;font-weight:800;font-style:italic;text-transform:uppercase;display:flex;align-items:center;gap:3mm;margin:7mm 0 3mm;break-after:avoid}
+h2::before{content:"";width:1.6mm;height:6mm;background:#FF5A1F;transform:skewX(-14deg);flex:none}
+h2 .no{color:#FF5A1F}
+p{margin:0 0 2.5mm}
+ol,ul{margin:0 0 3mm;padding-left:6mm}li{margin-bottom:1.2mm}
+.shots{display:flex;gap:5mm;justify-content:center;margin:4mm 0 2mm;break-inside:avoid}
+.shots figure{margin:0;width:50mm;text-align:center}
+.shots img{width:100%;border-radius:4mm;border:.6mm solid #0B1D33;box-shadow:0 2mm 5mm rgba(11,29,51,.18);display:block}
+.shots figcaption{font-size:8.5pt;font-weight:600;color:#4A5B70;margin-top:2mm}
+.tip{background:#EEF8D6;border-left:1.5mm solid #8DB91A;border-radius:2.5mm;padding:3mm 4mm;margin:3mm 0;break-inside:avoid;font-weight:600}
+.warn{background:#FFF0D1;border-left:1.5mm solid #F5A524;border-radius:2.5mm;padding:3mm 4mm;margin:3mm 0;break-inside:avoid;font-weight:600}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:4mm 0}
+.role{border:.4mm solid #D9E0E8;border-radius:4mm;padding:5mm;border-top:1.6mm solid #FF5A1F}
+.role.m{border-top-color:#2F7CF6}
+.role h3{font-size:12pt;font-weight:800;margin-bottom:2mm}
+.role ul{padding-left:5mm;margin:0}
+.kbd{display:inline-block;background:#0B1D33;color:#fff;border-radius:1.5mm;padding:0 2mm;font-weight:800;font-size:9.5pt;white-space:nowrap}
+.btn{display:inline-block;background:#FF5A1F;color:#fff;border-radius:1.5mm;padding:0 2mm;font-weight:800;font-size:9.5pt;white-space:nowrap}
+table{width:100%;border-collapse:collapse;margin:3mm 0 4mm;font-size:9.5pt;break-inside:avoid}
+th,td{border-bottom:.3mm solid #D9E0E8;padding:2mm 2.5mm;text-align:left;vertical-align:top}
+th{background:#0B1D33;color:#fff;font-weight:800}
+.faq b{display:block;margin-top:3mm}
+.end{text-align:center;margin-top:8mm;color:#4A5B70;font-weight:600;font-size:9pt}
+</style></head><body>
+
+<section class="cover">
+  <span class="speed">Miễn phí · Không quảng cáo</span>
+  <div class="brand">Sport<br><b>Share</b></div>
+  <div class="ct">Hướng dẫn sử dụng</div>
+  <div class="cs">Quản lý đội nhóm thể thao: lịch tập, điểm danh, chia tiền sân, công nợ, quỹ hội và chuyển khoản nhanh bằng VietQR.</div>
+  <div class="sports">🏸 ⚽ 🥎 🎾 🏓 🏐 🏀 🏃 🚴 🏊 🏋️ ⛳ ♟️</div>
+  <div class="toc">
+    <p><b>01</b>Sport Share là gì?</p>
+    <p><b>02</b>Bắt đầu nhanh</p>
+    <p><b>03</b>Lập hội mới</p>
+    <p><b>04</b>Thêm hội viên & mã PIN</p>
+    <p><b>05</b>Tài khoản nhận tiền VietQR</p>
+    <p><b>06</b>Tạo buổi, điểm danh, chia tiền</p>
+    <p><b>07</b>Chia đội · ghép cặp</p>
+    <p><b>08</b>Chốt buổi & công nợ</p>
+    <p><b>09</b>Thu tiền, quỹ tháng, sổ quỹ</p>
+    <p><b>10</b>Link xem nhanh cho hội viên</p>
+    <p><b>11</b>Sao lưu & bảo mật</p>
+    <p><b>12</b>Dành cho hội viên</p>
+    <p><b>13</b>Câu hỏi thường gặp</p>
+    <p><b>14</b>Mời cafe ủng hộ</p>
+  </div>
+</section>
+
+<div class="part" style="break-before:auto"><div class="n">Phần 1</div><h1>Làm quen</h1><p>Hai vai trò, cách mở app và cài lên điện thoại.</p></div>
+
+<h2><span class="no">01</span> Sport Share là gì?</h2>
+<p>Sport Share là web app miễn phí giúp các đội nhóm thể thao (cầu lông, bóng đá, pickleball, tennis, bóng bàn, bóng chuyền, bóng rổ, chạy bộ, đạp xe, bơi lội, gym, golf, cờ… hoặc môn tự đặt tên) quản lý lịch chơi, điểm danh, chia tiền sân và theo dõi ai đã trả, ai còn nợ. Ứng dụng có hai vai trò:</p>
+<div class="roles">
+  <div class="role"><h3>🛡️ Quản trị viên</h3><p>Trưởng nhóm, thủ quỹ. Đăng nhập bằng số điện thoại/email và mật khẩu, hoặc mã PIN quản trị 4 số.</p><ul><li>Lập hội, thêm hội viên</li><li>Tạo buổi, điểm danh, nhập chi phí</li><li>Chia tiền, chia đội, chốt công nợ</li><li>Thu tiền, quỹ tháng, sổ quỹ</li></ul></div>
+  <div class="role m"><h3>🏃 Hội viên</h3><p>Thành viên của hội. Chọn tên mình và nhập mã PIN 4 số do quản trị viên cấp.</p><ul><li>Xem lịch, đăng ký tham gia / báo vắng</li><li>Xem số tiền phải trả</li><li>Quét mã VietQR để chuyển khoản</li><li>Xem bảng xếp hạng chuyên cần</li></ul></div>
+</div>
+
+<h2><span class="no">02</span> Bắt đầu nhanh</h2>
+<ol>
+  <li>Mở trang web Sport Share bằng trình duyệt điện thoại (Safari trên iPhone, Chrome trên Android).</li>
+  <li><b>Cài lên màn hình chính</b> để dùng như app:<br>• iPhone: bấm nút <span class="kbd">Chia sẻ ⬆</span> → <b>Thêm vào MH chính</b>.<br>• Android: bấm <span class="kbd">⋮</span> → <b>Thêm vào màn hình chính</b> (hoặc <b>Cài đặt ứng dụng</b>).</li>
+  <li>Ở màn hình đầu, bấm <b>📘 Hướng dẫn sử dụng</b> bất cứ lúc nào để mở lại tài liệu này.</li>
+  <li>Muốn xem thử? Bấm <b>Mở hội mẫu</b>. Quản trị: <b>demo / 123456</b>, PIN quản trị <b>0000</b>. Hội viên Minh Quân: PIN <b>1111</b>, Thu Lan: PIN <b>2222</b>.</li>
+</ol>
+<div class="shots"><figure><img src="welcome.jpg"><figcaption>Màn hình đầu</figcaption></figure><figure><img src="profiles.jpg"><figcaption>Chọn tên hội viên</figcaption></figure><figure><img src="pin.jpg"><figcaption>Nhập mã PIN 4 số</figcaption></figure></div>
+<div class="warn">⚠️ Dữ liệu chỉ lưu trong trình duyệt của máy đang dùng, không có máy chủ. Quản trị viên nên dùng một máy cố định và tải file sao lưu định kỳ (xem mục 11).</div>
+
+<div class="part"><div class="n">Phần 2</div><h1>Dành cho quản trị viên</h1><p>Từ lúc lập hội tới khi thu đủ tiền sân.</p></div>
+
+<h2><span class="no">03</span> Lập hội mới</h2>
+<p>Ở màn hình đầu bấm <b>⚡ Lập hội mới</b>. Có 3 bước:</p>
+<ol>
+  <li><b>Chọn môn thể thao</b> (bắt buộc làm trước). Môn quyết định các khoản chi gợi ý (VD cầu lông: tiền sân, tiền cầu, nước uống; bóng đá: tiền sân, nước uống, trọng tài), cách chia đội (ghép cặp / chia đội / chia nhóm), tên gọi buổi (buổi, trận, chuyến…) và màu của hội. Chọn <b>Môn khác</b> để tự đặt tên môn.</li>
+  <li><b>Thông tin hội</b>: tên hội, sân quen thuộc, lịch chơi cố định (VD T3, T5, T7) và giờ bắt đầu. Lịch cố định giúp app tự gợi ý ngày cho buổi tiếp theo.</li>
+  <li><b>Tài khoản quản trị</b>: tên hiển thị, số điện thoại hoặc email, mật khẩu (ít nhất 6 ký tự) và <b>mã PIN quản trị 4 số</b>.</li>
+</ol>
+<div class="shots"><figure><img src="reg1.jpg"><figcaption>Bước 1: chọn môn</figcaption></figure><figure><img src="reg2.jpg"><figcaption>Bước 2: thông tin hội</figcaption></figure><figure><img src="a-home.jpg"><figcaption>Trang Tổng quan</figcaption></figure></div>
+<p>Khu quản trị có 5 tab ở thanh dưới: <b>📊 Tổng quan</b>, <b>📅 Buổi</b>, <b>💰 Thu chi</b>, <b>👥 Hội viên</b>, <b>⚙️ Cài đặt</b>. Môn thể thao có thể đổi sau trong <b>Cài đặt → Thông tin hội</b>.</p>
+
+<h2><span class="no">04</span> Thêm hội viên & mã PIN</h2>
+<ol>
+  <li>Vào tab <b>👥 Hội viên</b> → bấm <span class="btn">＋ Thêm</span>.</li>
+  <li>Nhập tên, số điện thoại (không bắt buộc). App tự tạo <b>mã PIN 4 số</b>, bạn có thể sửa.</li>
+  <li>Chọn <b>trình độ 1–5 sao</b> (dùng để chia đội cân bằng) và ảnh đại diện.</li>
+  <li>Gửi mã PIN <b>riêng</b> cho từng người. Nút <b>📋 Chép danh sách PIN</b> chép toàn bộ PIN để bạn gửi.</li>
+</ol>
+<div class="shots"><figure><img src="a-members.jpg"><figcaption>Danh sách hội viên</figcaption></figure><figure><img src="a-addmember.jpg"><figcaption>Thêm / sửa hội viên</figcaption></figure></div>
+<p>Chạm vào một hội viên để sửa hồ sơ, đổi PIN, <b>⏸ Cho nghỉ</b> (giữ lịch sử, ẩn khỏi danh sách chọn) hoặc <b>🗑 Xóa hẳn</b> (xóa luôn công nợ của người đó).</p>
+
+<h2><span class="no">05</span> Tài khoản nhận tiền VietQR</h2>
+<p>Vào <b>⚙️ Cài đặt → 🏦 Tài khoản nhận tiền</b>, chọn ngân hàng, nhập số tài khoản và tên chủ tài khoản (không dấu), bấm <b>Lưu tài khoản</b>. Từ đó mỗi hội viên có một mã VietQR <b>điền sẵn số tiền và nội dung</b> (VD: <i>CLCLSS THU LAN</i>), quét bằng bất kỳ app ngân hàng nào.</p>
+<div class="shots"><figure><img src="a-bank.jpg"><figcaption>Nhập tài khoản ngân hàng</figcaption></figure></div>
+<div class="tip">💡 Mã QR được tạo ngay trên máy theo chuẩn Napas 247. Sport Share không nhận, không giữ tiền và không lưu thông tin thanh toán.</div>
+
+<h2><span class="no">06</span> Tạo buổi, điểm danh, chia tiền</h2>
+<ol>
+  <li>Bấm <span class="btn">＋ Tạo buổi</span> (ở Tổng quan hoặc tab Buổi). Ngày, giờ, sân được điền sẵn theo lịch cố định; thêm ghi chú nếu cần.</li>
+  <li><b>Điểm danh</b>: chạm vào tên để đánh dấu có mặt. Bấm <b>Lấy theo đăng ký</b> để chọn nhanh những người đã bấm “Tham gia”. Nhãn <i>Đăng ký</i> / <i>Báo vắng</i> hiện bên cạnh tên.</li>
+  <li><b>Khách vãng lai</b>: bấm <b>＋ Thêm khách vãng lai</b>, chọn ai trả tiền cho khách (cộng vào phần của người đó) hoặc khách trả tại chỗ.</li>
+  <li><b>Chi phí</b>: nhập số tiền từng khoản. Gõ tắt được: <b>240k</b> = 240.000đ, <b>1.2tr</b> = 1.200.000đ. Bấm ra ngoài ô để lưu. Buổi mới tự lấy chi phí của buổi trước.</li>
+  <li><b>Người ứng tiền trước</b>: người đã trả tiền sân. Khi chốt, phần của người này được tự gạch nợ.</li>
+  <li><b>Chia tiền</b>: <b>⚖️ Chia đều</b> (làm tròn lên theo Cài đặt) hoặc <b>✍️ Tự nhập từng người</b> (VD người chơi nửa buổi trả ít hơn).</li>
+</ol>
+<div class="shots"><figure><img src="a-newsess.jpg"><figcaption>Tạo buổi mới</figcaption></figure><figure><img src="a-sess-top.jpg"><figcaption>Điểm danh</figcaption></figure><figure><img src="a-sess-cost.jpg"><figcaption>Chi phí & chia tiền</figcaption></figure></div>
+
+<h2><span class="no">07</span> Chia đội · ghép cặp</h2>
+<p>Khi có từ 2 người trở lên, mục chia đội xuất hiện trong màn hình buổi:</p>
+<table><tr><th>Môn</th><th>Cách chia</th></tr>
+<tr><td>Cầu lông, pickleball, tennis, bóng bàn, cờ</td><td>Ghép <b>cặp đôi</b> (người mạnh đi cùng người yếu hơn) hoặc chia 2 đội</td></tr>
+<tr><td>Bóng đá, bóng chuyền, bóng rổ, môn khác</td><td>Chia <b>2, 3 hoặc 4 đội</b> cân bằng trình độ</td></tr>
+<tr><td>Chạy bộ, đạp xe, bơi, gym, golf</td><td>Chia <b>nhóm tập</b></td></tr></table>
+<p>Bấm <b>🎲 Chia ngay</b>; chưa ưng thì bấm <b>Chia lại</b>. Hội viên cũng xem được kết quả chia đội khi mở buổi.</p>
+<div class="shots"><figure><img src="a-sess-teams.jpg"><figcaption>Ghép cặp ngẫu nhiên</figcaption></figure></div>
+
+<h2><span class="no">08</span> Chốt buổi & công nợ</h2>
+<ol>
+  <li>Sau buổi chơi, kiểm tra điểm danh và chi phí, bấm <b>✅ Chốt buổi & tạo công nợ</b>.</li>
+  <li>App tạo một khoản phải trả cho mỗi người. Người ứng tiền được tự gạch phần của mình.</li>
+  <li>Bấm <b>📋 Chép thông báo</b> rồi dán vào nhóm Zalo/Messenger: có ngày, sân, từng khoản chi, số tiền mỗi người và tài khoản nhận tiền.</li>
+  <li>Cần sửa? Bấm <b>↺ Mở lại để sửa</b> (các khoản công nợ của buổi sẽ được gỡ để chốt lại). Có thể <b>Hủy buổi</b> nếu buổi không diễn ra.</li>
+</ol>
+<div class="tip">💡 Buổi đã qua mà chưa chốt sẽ có nhắc nhở màu vàng ở Tổng quan và số đếm trên tab Buổi.</div>
+
+<h2><span class="no">09</span> Thu tiền, quỹ tháng, sổ quỹ</h2>
+<p>Tab <b>💰 Thu chi</b> có 3 mục:</p>
+<ul>
+  <li><b>📒 Công nợ</b>: danh sách người còn nợ. Chạm vào một người để xem từng khoản, bấm <b>Đã thu</b> từng khoản hoặc <b>✅ Đã thu đủ</b>; <b>📋 Chép tin nhắc nợ</b> để gửi riêng; <b>⬇️ Ảnh QR</b> để gửi mã chuyển khoản. Nút <b>Chép danh sách nhắc nợ cả hội</b> tạo một tin cho cả nhóm.</li>
+  <li><b>🏦 Quỹ hội</b>: ghi thu / ghi chi (mua cầu, liên hoan, tài trợ…). Khoản <b>quỹ tháng</b> hội viên đã trả tự cộng vào quỹ.</li>
+  <li><b>🧾 Lịch sử thu</b>: các khoản đã thu, có thể hoàn tác nếu bấm nhầm.</li>
+</ul>
+<p><b>Thu quỹ tháng</b>: bấm <span class="btn">💰 Thu quỹ tháng</span>, nhập số tiền mỗi người, chọn hội viên → app tạo khoản phải trả cho từng người. <b>Khoản thu khác</b> dùng cho áo đấu, phí giải…</p>
+<div class="shots"><figure><img src="a-money.jpg"><figcaption>Công nợ cả hội</figcaption></figure><figure><img src="a-debtsheet.jpg"><figcaption>Thu tiền một người</figcaption></figure><figure><img src="a-fund.jpg"><figcaption>Sổ quỹ hội</figcaption></figure></div>
+
+<h2><span class="no">10</span> Link xem nhanh cho hội viên</h2>
+<p>Vì dữ liệu nằm trên máy quản trị viên, hội viên dùng <b>link xem nhanh</b> để xem trên điện thoại của họ:</p>
+<ol>
+  <li>Bấm <b>🔗 Tạo & chép link</b> (ở Tổng quan hoặc Cài đặt), rồi dán vào nhóm chat của hội.</li>
+  <li>Hội viên mở link, chạm vào tên mình để xem số tiền cần trả và quét VietQR. Link cũng có lịch sắp tới và bảng xếp hạng.</li>
+  <li>Link là <b>bản chụp tại thời điểm tạo</b>. Sau khi gạch nợ hoặc chốt buổi mới, hãy tạo link mới và gửi lại.</li>
+</ol>
+<div class="shots"><figure><img src="shared.jpg"><figcaption>Hội viên mở link xem nhanh</figcaption></figure></div>
+<div class="warn">⚠️ Link không chứa mã PIN hay mật khẩu, nhưng ai có link đều xem được tên và công nợ. Chỉ gửi trong nhóm của hội.</div>
+
+<h2><span class="no">11</span> Sao lưu & bảo mật</h2>
+<ul>
+  <li><b>Sao lưu</b>: <b>Cài đặt → 💾 Tải file sao lưu</b>. Cất file cẩn thận (Google Drive, Zalo “Cloud của tôi”…).</li>
+  <li><b>Chuyển máy</b>: trên máy mới, ở màn hình đầu hoặc màn đăng nhập bấm <b>⬆️ Khôi phục từ file</b>.</li>
+  <li><b>Tự khóa</b>: khu quản trị tự khóa sau <b>10 phút</b> không thao tác; mở lại bằng PIN quản trị. Có thể bấm <b>🔒 Khóa khu quản trị</b> trước khi đưa máy cho hội viên.</li>
+  <li><b>Quên mật khẩu</b>: ở màn đăng nhập bấm <b>Quên mật khẩu?</b>, nhập số điện thoại/email và PIN quản trị để đặt mật khẩu mới.</li>
+  <li><b>Một tài khoản, nhiều hội</b>: cùng số điện thoại/email có thể quản lý nhiều hội, khi đăng nhập app sẽ hỏi chọn hội.</li>
+</ul>
+
+<div class="part"><div class="n">Phần 3</div><h1>Dành cho hội viên</h1><p>Xem lịch, đăng ký tham gia và thanh toán trong vài giây.</p></div>
+
+<h2><span class="no">12</span> Hội viên dùng app thế nào?</h2>
+<ol>
+  <li><b>Vào xem</b>: trên máy có dữ liệu hội, bấm <b>🏃 Hội viên vào xem</b> → chọn tên → nhập mã PIN. Trên điện thoại riêng, mở <b>link xem nhanh</b> quản trị viên gửi.</li>
+  <li><b>📅 Lịch</b>: bấm <b>Tham gia</b> hoặc <b>Vắng</b> cho từng buổi sắp tới. Chạm vào buổi để xem chi tiết, ai đăng ký, chia đội.</li>
+  <li><b>💸 Công nợ</b>: xem từng khoản, tổng tiền và mã <b>VietQR</b>. Mở app ngân hàng → <b>Quét mã</b> → kiểm tra rồi xác nhận. Có nút tải ảnh QR để “quét từ ảnh”.</li>
+  <li><b>🏆 Xếp hạng</b>: bảng chuyên cần theo tháng hoặc từ trước tới nay.</li>
+  <li><b>Của tôi</b>: đổi ảnh đại diện, đổi mã PIN, chọn giao diện sáng/tối.</li>
+</ol>
+<div class="shots"><figure><img src="m-home.jpg"><figcaption>Lịch & đăng ký</figcaption></figure><figure><img src="m-debt.jpg"><figcaption>Công nợ & VietQR</figcaption></figure><figure><img src="m-rank.jpg"><figcaption>Bảng xếp hạng</figcaption></figure></div>
+<div class="tip">💡 Sau khi chuyển khoản, quản trị viên sẽ xác nhận và gạch nợ. Nếu dùng link xem nhanh, trạng thái mới hiện ở link lần sau.</div>
+
+<h2><span class="no">13</span> Câu hỏi thường gặp</h2>
+<div class="faq">
+  <b>Sport Share có mất phí không?</b><p>Không. Miễn phí, không quảng cáo, mọi tính năng như nhau.</p>
+  <b>Đổi điện thoại thì sao?</b><p>Tải file sao lưu trên máy cũ, khôi phục trên máy mới (mục 11).</p>
+  <b>Hội viên quên mã PIN?</b><p>Quản trị viên vào tab Hội viên, chạm tên người đó để xem hoặc đặt PIN mới.</p>
+  <b>Chia đều bị dư vài nghìn?</b><p>Do làm tròn lên. Phần dư thuộc người ứng tiền, hoặc vào quỹ. Đổi cách làm tròn trong Cài đặt → Thông tin hội.</p>
+  <b>Một người có thể ở nhiều hội?</b><p>Có. Mỗi hội quản lý riêng. Bấm “Đổi hội” ở màn chọn tên.</p>
+  <b>Xóa lịch sử trình duyệt có mất dữ liệu không?</b><p>Có, nếu xóa “dữ liệu trang web”. Hãy tải file sao lưu định kỳ.</p>
+</div>
+
+<h2><span class="no">14</span> Mời cafe ủng hộ ☕</h2>
+<p>Nếu Sport Share giúp ích cho hội, bạn có thể mời Team Sport Share một ly cafe: chọn <b>Sữa đá</b>, <b>Latte</b>, <b>Cà phê Muối</b> hoặc <b>Tùy tâm</b> ở cuối trang Tổng quan, Cài đặt hoặc màn đăng nhập quản trị, rồi quét mã VietQR. Mọi sự ủng hộ là hoàn toàn tự nguyện, không đi kèm nghĩa vụ hay dịch vụ thương mại.</p>
+<div class="shots"><figure><img src="donate.jpg"><figcaption>Mời cafe</figcaption></figure></div>
+<p class="end">⚡ SPORT SHARE · Chơi hết mình, chia tiền minh bạch.</p>
+</body></html>

@@ -9,6 +9,10 @@ Web app **miễn phí, không quảng cáo, không cần máy chủ** để qu�
 | 🛡️ **Quản trị viên** | Số điện thoại/email + mật khẩu, hoặc PIN quản trị 4 số | Tạo buổi, điểm danh, nhập chi phí, chia tiền, chia đội, chốt công nợ, thu quỹ, quản lý hội viên, cài đặt |
 | 🏃 **Hội viên** | Chọn tên + mã PIN 4 số | Xem lịch, đăng ký tham gia / báo vắng, xem số tiền phải trả, quét VietQR, bảng xếp hạng chuyên cần |
 
+## Hướng dẫn sử dụng
+
+File [`huong-dan-su-dung.pdf`](huong-dan-su-dung.pdf) (12 trang, có ảnh minh họa) mở được ngay từ nút **📘 Hướng dẫn sử dụng** ở màn hình đầu của app. Nguồn để chỉnh sửa nằm trong `docs/guide/`.
+
 ## Tính năng
 
 - **Lập hội: chọn môn thể thao trước**, rồi đặt tên hội, sân quen thuộc, lịch chơi cố định, cuối cùng tạo tài khoản quản trị. Môn thể thao quyết định khoản chi gợi ý (tiền sân, tiền cầu, trọng tài…), cách chia đội (ghép cặp / chia đội / chia nhóm), màu và biểu tượng của hội.
