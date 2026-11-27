@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /marketing/
 
 Sitemap: https://sportshare.pro.vn/sitemap.xml
