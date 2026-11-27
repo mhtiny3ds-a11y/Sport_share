@@ -205,7 +205,6 @@ const ACT = {
   downloadDonate: () => { const o = DONATE_OPTS[UI.donateIdx ?? 1]; saveQRImage({ title: 'SPORT SHARE ☕', sub: 'Cảm ơn bạn đã mời Team Sport Share ly cafe', payload: vietQR({ bin: DONATE.bin, acct: DONATE.acct, amount: o.amount, note: DONATE.note }), lines: [['Người nhận', DONATE.name + ' · ' + DONATE.bank], ['Số tài khoản', DONATE.acct], ['Ly cafe', o.amount ? o.label : 'Tùy tâm', true], ['Nội dung', DONATE.note]], file: `SportShare-cafe-${o.slug}.png` }); },
 
   /* đăng nhập */
-  fbLoad: () => { UI.fbOn = true; render(); },
   authMode: el => go('auth', { authMode: el.dataset.m }),
   googleSignIn: async () => {
     if (!CLOUD) return;

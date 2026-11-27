@@ -67,11 +67,10 @@ function inAppNote() {
     <div class="row wrap">${android ? `<a class="btn sm" style="text-decoration:none" href="intent://${location.host}${location.pathname}#Intent;scheme=https;package=com.android.chrome;end">Mở bằng Chrome</a>` : ''}<button class="btn sm ghost" data-act="copy" data-t="${esc(location.origin + location.pathname)}">📋 Chép link</button></div></div>`;
 }
 
-/* Fanpage: thẻ tự vẽ, khung Facebook chỉ tải khi người dùng bấm (không cookie Facebook nếu không bấm) */
+/* Fanpage: thẻ tự vẽ, không nhúng khung Facebook (không cookie Facebook) */
 const FANPAGE = 'https://www.facebook.com/sportsharepro/';
 function fanpageBox() {
-  const feed = UI.fbOn ? `<iframe title="Bài viết Fanpage Sport Share" src="https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(FANPAGE)}&tabs=timeline&width=500&height=520&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true" loading="lazy" allow="encrypted-media"></iframe>`
-    : `<div class="feed"><button type="button" data-act="fbLoad">Xem bài viết mới ngay tại đây</button><br>Khung Facebook chỉ tải khi bạn bấm.</div>`;
+  const feed = `<div class="feed"><a href="${FANPAGE}" target="_blank" rel="noopener">Xem bài viết mới trên Facebook →</a></div>`;
   return `<section class="fbbox">
     <a class="cv" href="${FANPAGE}" target="_blank" rel="noopener" aria-label="Ảnh bìa Fanpage Sport Share" style="background-image:url(../img/fb-cover.jpg)"></a>
     <a class="pg" href="${FANPAGE}" target="_blank" rel="noopener"><img src="icon.svg" alt=""><span><b>Sport Share - App chia tiền miễn phí</b><small>Fanpage chính thức · mẹo dùng, tính năng mới, góp ý</small></span></a>
@@ -769,7 +768,7 @@ function vLegal() {
     ${h('1. Sport Share lưu những gì?')}<p>Tài khoản: tên hiển thị, email, ảnh đại diện Google (nếu đăng nhập bằng Google). Trong từng hội: tên hội, môn thể thao, lịch chơi, danh sách hội viên (tên, biểu tượng, trình độ, số điện thoại nếu quản trị nhập), vote đi / không đi, điểm danh, chi phí, công nợ, quỹ hội và tài khoản ngân hàng nhận tiền của hội.</p>
     ${h('2. Dữ liệu nằm ở đâu?')}<p>Dữ liệu hội lưu trên Google Firebase (Cloud Firestore, máy chủ tại Singapore) để các thành viên dùng chung; đăng nhập do Firebase Authentication xử lý, Sport Share không thấy mật khẩu của bạn. Hội mẫu để chơi thử chỉ nằm trong trình duyệt và mất khi tải lại trang.</p>
     ${h('3. Ai xem được gì?')}<p>Chỉ thành viên của hội mới xem được hội đó. Hội viên chỉ thấy công nợ của chính mình; quản trị viên thấy công nợ cả hội và sổ quỹ. Hội viên chỉ tự vote, tự sửa tên/biểu tượng và báo đã chuyển khoản cho chính mình. Link mời và link xem nhanh: ai có link đều mở được, vì vậy chỉ gửi trong nhóm của hội.</p>
-    ${h('4. Không quảng cáo, không bán dữ liệu')}<p>Không quảng cáo, không cookie theo dõi, không công cụ phân tích. Sport Share không bán hay chia sẻ dữ liệu cho bên thứ ba. Khung bài viết Fanpage chỉ tải từ Facebook khi bạn bấm "Xem bài viết mới"; khi đó Facebook có thể đặt cookie theo chính sách của Facebook.</p>
+    ${h('4. Không quảng cáo, không bán dữ liệu')}<p>Không quảng cáo, không cookie theo dõi, không công cụ phân tích. Sport Share không bán hay chia sẻ dữ liệu cho bên thứ ba.</p>
     ${h('5. Xóa dữ liệu')}<p>Hội viên có thể rời hội bất cứ lúc nào. Người lập hội xóa được toàn bộ hội. Quản trị viên nên tải file sao lưu định kỳ (app nhắc mỗi 30 ngày) để phòng xóa nhầm. Muốn xóa tài khoản, hãy liên hệ qua trang dự án bên dưới.</p>
     ${h('6. Thanh toán và ủng hộ')}<p>Chuyển khoản diễn ra trong ứng dụng ngân hàng của bạn. Sport Share không nhận, không giữ và không lưu thông tin thanh toán nào.</p>
   </article>

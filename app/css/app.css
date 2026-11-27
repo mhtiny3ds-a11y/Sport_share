@@ -306,5 +306,5 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .fbbox .bt a{flex:1;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--surface)}
 .fbbox .bt a.fb{background:#1877F2;border-color:#1877F2;color:#fff}
 .fbbox .feed{border-top:1px solid var(--line);padding:10px 16px 14px;font-size:13px;color:var(--ink-3);font-weight:600;text-align:center}
-.fbbox .feed button{background:none;border:0;color:#1877F2;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
+.fbbox .feed a{color:#1877F2;font-weight:700}.fbbox .feed button{background:none;border:0;color:#1877F2;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
 .fbbox iframe{display:block;width:100%;height:520px;border:0;margin:0 auto;background:#fff}
