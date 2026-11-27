@@ -67,6 +67,18 @@ function inAppNote() {
     <div class="row wrap">${android ? `<a class="btn sm" style="text-decoration:none" href="intent://${location.host}${location.pathname}#Intent;scheme=https;package=com.android.chrome;end">Mở bằng Chrome</a>` : ''}<button class="btn sm ghost" data-act="copy" data-t="${esc(location.origin + location.pathname)}">📋 Chép link</button></div></div>`;
 }
 
+/* Fanpage: thẻ tự vẽ, khung Facebook chỉ tải khi người dùng bấm (không cookie Facebook nếu không bấm) */
+const FANPAGE = 'https://www.facebook.com/profile.php?id=61597237160150';
+function fanpageBox() {
+  const feed = UI.fbOn ? `<iframe title="Bài viết Fanpage Sport Share" src="https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(FANPAGE)}&tabs=timeline&width=500&height=520&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true" loading="lazy" allow="encrypted-media"></iframe>`
+    : `<div class="feed"><button type="button" data-act="fbLoad">Xem bài viết mới ngay tại đây</button><br>Khung Facebook chỉ tải khi bạn bấm.</div>`;
+  return `<section class="fbbox">
+    <a class="cv" href="${FANPAGE}" target="_blank" rel="noopener" aria-label="Ảnh bìa Fanpage Sport Share" style="background-image:url(../img/fb-cover.jpg)"></a>
+    <a class="pg" href="${FANPAGE}" target="_blank" rel="noopener"><img src="icon.svg" alt=""><span><b>Sport Share - App chia tiền miễn phí</b><small>Fanpage chính thức · mẹo dùng, tính năng mới, góp ý</small></span></a>
+    <div class="bt"><a class="fb" href="${FANPAGE}" target="_blank" rel="noopener">👍 Theo dõi</a><a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://sportshare.pro.vn/')}" target="_blank" rel="noopener">↗ Chia sẻ</a></div>
+    ${feed}</section>`;
+}
+
 function sessCard(c, s, act = 'openSession') {
   const d = parseDay(s.date), sp = sportOf(c);
   const vt = voteOf(c, s);
@@ -134,7 +146,7 @@ function vWelcome() {
     ${err()}
   </section>` : `<div class="note warn">Chưa kết nối được máy chủ đăng nhập. Kiểm tra mạng rồi tải lại trang.</div>`}
   <button class="choice" data-act="demo"><span class="ic" style="background:var(--warn-soft)">🧪</span><span><b>Chơi thử hội mẫu</b><span class="tiny muted b">Chỉ để xem thử, <b>thoát ra là mất</b>. Muốn dùng thật: đăng nhập rồi bấm Lập hội mới</span></span></button>
-  <p class="foot"><button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button> · <a class="link" href="../">Giới thiệu Sport Share</a></p>`;
+  <p class="foot"><button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button> · <a class="link" href="../">Giới thiệu Sport Share</a> · <a class="link" href="${FANPAGE}" target="_blank" rel="noopener">Fanpage</a></p>`;
 }
 
 /* ---------- đăng nhập / đăng ký / quên mật khẩu bằng email ---------- */
@@ -211,6 +223,7 @@ function vAccount() {
   <section class="card stack">${secH('💾 Khôi phục từ file sao lưu')}<p class="tiny muted b">Có file sao lưu Sport Share (.json)? Hội trong file sẽ được khôi phục lên đám mây thành hội của bạn.</p>${restoreBlock(locals.length > 0)}</section>
   <section class="card stack">${secH('Giao diện')}<div class="chips">${[['auto', '🌓 Theo máy'], ['light', '☀️ Sáng'], ['dark', '🌙 Tối']].map(([k, t]) => `<button class="chip ${(DEV.theme || 'auto') === k ? 'on' : ''}" data-act="theme" data-k="${k}">${t}</button>`).join('')}</div></section>
   ${guideLink()}
+  ${fanpageBox()}
   ${donateBlock()}
   <div class="stack"><button class="btn block ghost" data-act="signOut">↩ Đăng xuất</button></div>
   <p class="foot">Sport Share v${APP.ver}${CLOUD && CLOUD.emulator ? ' · môi trường thử nghiệm' : ''} · <button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button></p>`;
@@ -756,7 +769,7 @@ function vLegal() {
     ${h('1. Sport Share lưu những gì?')}<p>Tài khoản: tên hiển thị, email, ảnh đại diện Google (nếu đăng nhập bằng Google). Trong từng hội: tên hội, môn thể thao, lịch chơi, danh sách hội viên (tên, biểu tượng, trình độ, số điện thoại nếu quản trị nhập), vote đi / không đi, điểm danh, chi phí, công nợ, quỹ hội và tài khoản ngân hàng nhận tiền của hội.</p>
     ${h('2. Dữ liệu nằm ở đâu?')}<p>Dữ liệu hội lưu trên Google Firebase (Cloud Firestore, máy chủ tại Singapore) để các thành viên dùng chung; đăng nhập do Firebase Authentication xử lý, Sport Share không thấy mật khẩu của bạn. Hội mẫu để chơi thử chỉ nằm trong trình duyệt và mất khi tải lại trang.</p>
     ${h('3. Ai xem được gì?')}<p>Chỉ thành viên của hội mới xem được hội đó. Hội viên chỉ thấy công nợ của chính mình; quản trị viên thấy công nợ cả hội và sổ quỹ. Hội viên chỉ tự vote, tự sửa tên/biểu tượng và báo đã chuyển khoản cho chính mình. Link mời và link xem nhanh: ai có link đều mở được, vì vậy chỉ gửi trong nhóm của hội.</p>
-    ${h('4. Không quảng cáo, không bán dữ liệu')}<p>Không quảng cáo, không cookie theo dõi, không công cụ phân tích. Sport Share không bán hay chia sẻ dữ liệu cho bên thứ ba.</p>
+    ${h('4. Không quảng cáo, không bán dữ liệu')}<p>Không quảng cáo, không cookie theo dõi, không công cụ phân tích. Sport Share không bán hay chia sẻ dữ liệu cho bên thứ ba. Khung bài viết Fanpage chỉ tải từ Facebook khi bạn bấm "Xem bài viết mới"; khi đó Facebook có thể đặt cookie theo chính sách của Facebook.</p>
     ${h('5. Xóa dữ liệu')}<p>Hội viên có thể rời hội bất cứ lúc nào. Người lập hội xóa được toàn bộ hội. Quản trị viên nên tải file sao lưu định kỳ (app nhắc mỗi 30 ngày) để phòng xóa nhầm. Muốn xóa tài khoản, hãy liên hệ qua trang dự án bên dưới.</p>
     ${h('6. Thanh toán và ủng hộ')}<p>Chuyển khoản diễn ra trong ứng dụng ngân hàng của bạn. Sport Share không nhận, không giữ và không lưu thông tin thanh toán nào.</p>
   </article>
@@ -766,7 +779,7 @@ function vLegal() {
     ${h('2. Trách nhiệm của quản trị viên')}<p>Quản trị viên kiểm tra số liệu trước khi thông báo, chỉ mời đúng người vào hội và giữ thông tin tài khoản nhận tiền chính xác.</p>
     ${h('3. Ủng hộ')}<p>Mọi sự ủng hộ là hoàn toàn tự nguyện để duy trì và phát triển ứng dụng miễn phí, không đi kèm nghĩa vụ hay dịch vụ thương mại. Ủng hộ hay không, mọi người dùng đều có đầy đủ tính năng như nhau.</p>
     ${h('4. Giấy phép')}<p>Font Be Vietnam Pro dùng theo SIL Open Font License 1.1. Thư viện qrcode-generator (Kazuhiko Arase) và Firebase JS SDK theo giấy phép MIT / Apache 2.0. "QR Code" là nhãn hiệu của DENSO WAVE. VietQR là nhãn hiệu của Napas.</p>
-    ${h('5. Liên hệ')}<p>Góp ý, báo lỗi, yêu cầu xóa dữ liệu: <span style="user-select:all">github.com/mhtiny3ds-a11y/Sport_share</span>.</p>
+    ${h('5. Liên hệ')}<p>Góp ý, báo lỗi, yêu cầu xóa dữ liệu: nhắn <a class="link" href="${FANPAGE}" target="_blank" rel="noopener">Fanpage Sport Share</a> hoặc <span style="user-select:all">github.com/mhtiny3ds-a11y/Sport_share</span>.</p>
   </article>
   <button class="btn block ghost" data-act="closeLegal">← Quay lại</button>`;
 }

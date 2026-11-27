@@ -1,6 +1,6 @@
 /* Sport Share service worker: lưu sẵn vỏ ứng dụng để mở được khi mất mạng. */
-const CACHE = 'sportshare-app-v9';
-const SHELL = ['./', 'index.html', 'css/app.css?v=9', 'js/firebase-config.js?v=9', 'js/qrcode.js?v=9', 'js/core.js?v=9', 'js/store.js?v=9', 'js/views.js?v=9', 'js/app.js?v=9', 'js/cloud.js?v=9', 'vendor/firebase.js', 'manifest.webmanifest', 'icon.svg', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
+const CACHE = 'sportshare-app-v10';
+const SHELL = ['./', 'index.html', 'css/app.css?v=10', 'js/firebase-config.js?v=10', 'js/qrcode.js?v=10', 'js/core.js?v=10', 'js/store.js?v=10', 'js/views.js?v=10', 'js/app.js?v=10', 'js/cloud.js?v=10', 'vendor/firebase.js', 'manifest.webmanifest', 'icon.svg', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
   'fonts/be-vietnam-pro-vietnamese-400-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-600-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-700-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-800-normal.woff2',
   'fonts/be-vietnam-pro-latin-400-normal.woff2', 'fonts/be-vietnam-pro-latin-600-normal.woff2', 'fonts/be-vietnam-pro-latin-700-normal.woff2', 'fonts/be-vietnam-pro-latin-800-normal.woff2'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

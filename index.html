@@ -201,6 +201,17 @@ section{padding:96px 0}
 .coffee p{color:var(--ink-2)}
 @media (max-width:860px){.price{grid-template-columns:1fr}}
 
+.fbbox{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;width:100%;max-width:500px;margin:0 auto;box-shadow:var(--shadow)}
+.fbbox .cv{display:block;aspect-ratio:820/312;background:#0B1D33 center/cover no-repeat}
+.fbbox .pg{display:flex;align-items:center;gap:12px;padding:14px 16px 10px;text-decoration:none;color:inherit}
+.fbbox .pg img{width:56px;height:56px;border-radius:50%;border:3px solid var(--surface);margin-top:-34px;background:#0B1D33;flex:none}
+.fbbox .pg b{display:block;font-size:16px;line-height:1.25}.fbbox .pg small{color:var(--ink-3);font-weight:600;font-size:13px}
+.fbbox .bt{display:flex;gap:8px;padding:0 16px 14px;flex-wrap:wrap}
+.fbbox .bt a{flex:1;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--surface)}
+.fbbox .bt a.fb{background:#1877F2;border-color:#1877F2;color:#fff}
+.fbbox .feed{border-top:1px solid var(--line);padding:10px 16px 14px;font-size:13px;color:var(--ink-3);font-weight:600;text-align:center}
+.fbbox .feed button{background:none;border:0;color:#1877F2;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
+.fbbox iframe{display:block;width:100%;height:520px;border:0;margin:0 auto;background:#fff}
 /* faq */
 .faq{max-width:820px;margin:0 auto;display:grid;gap:12px}
 .faq details{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:0 22px}
@@ -433,6 +444,18 @@ footer a:hover{color:var(--brand)}
 </section>
 
 <!-- FAQ -->
+<section id="fanpage" style="padding-top:0">
+  <div class="wrap">
+    <div class="sh reveal"><span class="eyebrow o"><span>Cộng đồng</span></span><h2 class="disp">Theo dõi Sport Share trên Facebook</h2><p>Mẹo dùng app, tính năng mới và câu chuyện từ các hội. Góp ý, báo lỗi cứ nhắn Fanpage nhé.</p></div>
+    <div class="fbbox reveal" id="fbbox">
+      <a class="cv" href="https://www.facebook.com/profile.php?id=61597237160150" target="_blank" rel="noopener" aria-label="Ảnh bìa Fanpage Sport Share" style="background-image:url(img/fb-cover.jpg)"></a>
+      <a class="pg" href="https://www.facebook.com/profile.php?id=61597237160150" target="_blank" rel="noopener"><img src="icon.svg" alt=""><span><b>Sport Share - App chia tiền miễn phí</b><small>Fanpage chính thức · Facebook</small></span></a>
+      <div class="bt"><a class="fb" href="https://www.facebook.com/profile.php?id=61597237160150" target="_blank" rel="noopener">👍 Theo dõi</a><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsportshare.pro.vn%2F" target="_blank" rel="noopener">↗ Chia sẻ</a></div>
+      <div class="feed" id="fbfeed"><button type="button" id="fbload">Xem bài viết mới ngay tại đây</button><br>Khung Facebook chỉ tải khi bạn bấm.</div>
+    </div>
+  </div>
+</section>
+
 <section id="faq" style="padding-top:0">
   <div class="wrap">
     <div class="sh reveal"><span class="eyebrow o"><span>Hỏi đáp</span></span><h2 class="disp">Câu hỏi thường gặp</h2></div>
@@ -464,6 +487,7 @@ footer a:hover{color:var(--brand)}
     <nav aria-label="Liên kết cuối trang">
       <a data-app="" href="app/">Mở ứng dụng</a>
       <a href="huong-dan-su-dung.pdf?v=4" target="_blank" rel="noopener">Hướng dẫn sử dụng</a>
+      <a href="https://www.facebook.com/profile.php?id=61597237160150" target="_blank" rel="noopener">Fanpage</a>
       <a data-app="#legal" href="app/#legal">Riêng tư & Điều khoản</a>
     </nav>
   </div>
@@ -476,6 +500,8 @@ footer a:hover{color:var(--brand)}
   // Link cũ (trước khi app chuyển vào /app/): link xem nhanh #s=… và đường dẫn nhanh → chuyển sang app
   if (/^#(s=|register$|demo$|admin$|members$|legal$)/.test(location.hash)) { location.replace(base + location.hash); return; }
   document.querySelectorAll('[data-app]').forEach(function (a) { a.href = base + a.getAttribute('data-app'); });
+  var fbl = document.getElementById('fbload');
+  if (fbl) fbl.onclick = function () { var u = 'https://www.facebook.com/plugins/page.php?href=' + encodeURIComponent('https://www.facebook.com/profile.php?id=61597237160150') + '&tabs=timeline&width=500&height=520&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true'; document.getElementById('fbfeed').outerHTML = '<iframe title="Bài viết Fanpage Sport Share" src="' + u + '" loading="lazy" allow="encrypted-media"></iframe>'; };
 
   var S = [['🏸','Cầu lông','#0FA37F','Ghép cặp'],['⚽','Bóng đá','#16A34A','Chia đội'],['🥎','Pickleball','#D97706','Ghép cặp'],['🎾','Tennis','#65A30D','Ghép cặp'],['🏓','Bóng bàn','#DC2626','Ghép cặp'],['🏐','Bóng chuyền','#2563EB','Chia đội'],['🏀','Bóng rổ','#EA580C','Chia đội'],['🏃','Chạy bộ','#E11D48','Chia nhóm'],['🚴','Đạp xe','#0891B2','Chia nhóm'],['🏊','Bơi lội','#0284C7','Chia nhóm'],['🏋️','Gym','#7C3AED','Chia nhóm'],['⛳','Golf','#15803D','Chia nhóm'],['♟️','Cờ','#475569','Ghép cặp'],['🏅','Môn khác','#FF5A1F','Tự đặt tên']];
   var g = document.getElementById('sportsGrid');

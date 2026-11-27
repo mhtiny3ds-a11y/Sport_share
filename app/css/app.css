@@ -295,3 +295,16 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .btn.gbtn{background:#fff;color:#1F1F1F;border:1.5px solid #DADCE0;box-shadow:0 3px 0 #DADCE0;gap:12px}
 :root[data-theme="dark"] .btn.gbtn{background:#fff;color:#1F1F1F}
 .note[data-act]{width:100%;cursor:pointer}
+
+/* Fanpage */
+.fbbox{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;width:100%;max-width:500px;box-shadow:var(--shadow)}
+.fbbox .cv{display:block;aspect-ratio:820/312;background:#0B1D33 center/cover no-repeat}
+.fbbox .pg{display:flex;align-items:center;gap:12px;padding:14px 16px 10px;text-decoration:none;color:inherit}
+.fbbox .pg img{width:56px;height:56px;border-radius:50%;border:3px solid var(--surface);margin-top:-34px;background:#0B1D33;flex:none}
+.fbbox .pg b{display:block;font-size:16px;line-height:1.25}.fbbox .pg small{color:var(--ink-3);font-weight:600;font-size:13px}
+.fbbox .bt{display:flex;gap:8px;padding:0 16px 14px;flex-wrap:wrap}
+.fbbox .bt a{flex:1;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--surface)}
+.fbbox .bt a.fb{background:#1877F2;border-color:#1877F2;color:#fff}
+.fbbox .feed{border-top:1px solid var(--line);padding:10px 16px 14px;font-size:13px;color:var(--ink-3);font-weight:600;text-align:center}
+.fbbox .feed button{background:none;border:0;color:#1877F2;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
+.fbbox iframe{display:block;width:100%;height:520px;border:0;margin:0 auto;background:#fff}
