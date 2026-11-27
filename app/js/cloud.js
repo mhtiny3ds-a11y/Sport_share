@@ -33,7 +33,7 @@ else {
       projectId: config.projectId,
       onAuth(cb) { return F.onAuthStateChanged(auth, u => cb(userOf(u))); },
       user: () => userOf(auth.currentUser),
-      async google() { const p = new F.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' }); await F.signInWithPopup(auth, p); },
+      async google() { const p = new F.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' }); const r = await F.signInWithPopup(auth, p); const m = r.user.metadata || {}; return { isNew: !!m.creationTime && m.creationTime === m.lastSignInTime }; },
       async emailSignIn(email, pw) { await F.signInWithEmailAndPassword(auth, email, pw); },
       async emailSignUp(name, email, pw) { const r = await F.createUserWithEmailAndPassword(auth, email, pw); if (name) await F.updateProfile(r.user, { displayName: name }); return userOf(r.user); },
       async resetPassword(email) { await F.sendPasswordResetEmail(auth, email); },

@@ -210,12 +210,13 @@ const ACT = {
     if (!CLOUD) return;
     if (inAppName()) { UI.err = `${inAppName()} không cho đăng nhập Google. Mở Sport Share bằng ${isIOS() ? 'Safari' : 'Chrome'} (xem hướng dẫn phía trên), hoặc đăng nhập bằng email.`; return render(); }
     UI.busy = true; UI.err = ''; render();
-    try { await CLOUD.google(); }
+    try { const r = await CLOUD.google(); if (r && r.isNew) window.SSPixel && SSPixel.track('CompleteRegistration', { content_name: 'google' }); }
     catch (e) { if (!/popup-closed|cancelled-popup/.test(e.code || '')) UI.err = authMsg(e); }
     UI.busy = false; render();
   },
+  consentReset: () => { if (window.SSPixel) SSPixel.reset(); },
   signOut: async () => { DEV.clubId = null; DEV.joins = []; persistLocal(); if (CLOUD) await CLOUD.signOut(); toast('Đã đăng xuất.'); },
-  demo: async () => { const c = await seedDemo(); toast('Đang chơi thử hội mẫu: bạn là quản trị, đóng vai Minh Quân. Dữ liệu không được lưu.'); openClub(c.id); },
+  demo: async () => { window.SSPixel && SSPixel.track('ViewContent', { content_name: 'demo' }); const c = await seedDemo(); toast('Đang chơi thử hội mẫu: bạn là quản trị, đóng vai Minh Quân. Dữ liệu không được lưu.'); openClub(c.id); },
   exitDemo: () => { DEMO = null; DEV.clubId = null; persistLocal(); goHomeOrWelcome(); },
   snoozeBackup: el => { DEV.snooze[el.dataset.cid || DEV.clubId] = Date.now() + 3 * 864e5; persistLocal(); toast('Sẽ nhắc lại sau 3 ngày.'); },
 
@@ -234,6 +235,7 @@ const ACT = {
     const ok = await claimInvite(j.code, j.inv);
     UI.busy = false;
     if (!ok) { UI.err = 'Không vào được hội. Có thể link đã được người khác dùng, hãy nhờ quản trị gửi link mới.'; return render(); }
+    window.SSPixel && SSPixel.custom('JoinClub', { via: 'personal' });
     toast(`Chào mừng bạn đến ${j.inv.clubName}! 🎉`); waitClub(j.inv.clubId, () => openClub(j.inv.clubId));
   },
   uploadSheet: el => { const c = STORE.clubs[el.dataset.cid]; if (c) sheet(() => uploadSheet(c)); },
@@ -433,6 +435,7 @@ const FORMS = {
       if (m === 'register') {
         if (!UI.authName) { UI.busy = false; UI.err = 'Nhập tên hiển thị.'; return render(); }
         const u = await CLOUD.emailSignUp(UI.authName, UI.authEmail, v.pass || '');
+        window.SSPixel && SSPixel.track('CompleteRegistration', { content_name: 'email' });
         if (ME && u && ME.uid === u.uid) { ME.name = u.name; }
       } else await CLOUD.emailSignIn(UI.authEmail, v.pass || '');
     } catch (e) { UI.err = authMsg(e); }
@@ -449,7 +452,8 @@ const FORMS = {
     const j = UI.join; if (!j || !j.inv) return;
     UI.busy = true; render();
     const ok = await requestJoin(j.code, j.inv, (v.name || '').trim());
-    UI.busy = false; if (ok) UI.join = { ...j, state: 'sent' }; else UI.err = 'Chưa gửi được yêu cầu. Link có thể đã hết hiệu lực.';
+    UI.busy = false; if (ok) window.SSPixel && SSPixel.custom('JoinClub', { via: 'group' });
+    if (ok) UI.join = { ...j, state: 'sent' }; else UI.err = 'Chưa gửi được yêu cầu. Link có thể đã hết hiệu lực.';
   },
   async myName(v) {
     const name = (v.name || '').trim().slice(0, 40); if (!name || !ME) return;
@@ -475,6 +479,7 @@ const FORMS = {
     UI.busy = true; render();
     const id = await createCloudClub(fields, !!v.withMe);
     UI.busy = false; if (!id) { UI.err = 'Chưa lập được hội. Kiểm tra mạng rồi thử lại.'; return render(); }
+    window.SSPixel && SSPixel.custom('CreateClub', { sport: r.sport });
     toast(`Đã lập hội ${r.name}! 🎉`);
     waitClub(id, () => openClub(id));
   },

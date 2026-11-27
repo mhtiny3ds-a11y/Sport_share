@@ -240,6 +240,7 @@ footer a:hover{color:var(--brand)}
 .reveal.in{opacity:1;transform:none}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Sport Share","url":"https://sportshare.pro.vn/","logo":"https://sportshare.pro.vn/icon.svg","sameAs":["https://www.facebook.com/sportsharepro/"]}</script>
+<script src="pixel.js?v=1" defer></script>
 </head>
 <body>
 
@@ -435,7 +436,7 @@ footer a:hover{color:var(--brand)}
     <div class="sh reveal"><span class="eyebrow o"><span>Giá</span></span><h2 class="disp">Miễn phí. <span class="hl">Thật sự.</span></h2><p>Không gói trả phí, không quảng cáo, không giới hạn hội viên hay số buổi.</p></div>
     <div class="price">
       <div class="plan reveal"><span class="eyebrow"><span>Gói duy nhất</span></span><div class="amt">0đ <small>/ mãi mãi</small></div>
-        <ul><li>Không giới hạn hội, hội viên, buổi chơi</li><li>Đầy đủ chia tiền, công nợ, quỹ hội, VietQR</li><li>Không quảng cáo, không cookie theo dõi</li><li>Đăng nhập Google, dữ liệu đồng bộ mọi điện thoại</li></ul>
+        <ul><li>Không giới hạn hội, hội viên, buổi chơi</li><li>Đầy đủ chia tiền, công nợ, quỹ hội, VietQR</li><li>Không quảng cáo, không bán dữ liệu</li><li>Đăng nhập Google, dữ liệu đồng bộ mọi điện thoại</li></ul>
         <a class="btn volt" data-app="#register" href="app/#register">Lập hội miễn phí</a></div>
       <div class="coffee reveal"><div style="font-size:44px">☕</div><h3 class="disp" style="font-size:26px">Mời Team một ly cafe?</h3><p>Nếu Sport Share giúp hội của bạn bớt đau đầu chuyện tiền nong, bạn có thể mời Team một ly cafe ngay trong app. Hoàn toàn tự nguyện, mọi người dùng đều có đầy đủ tính năng như nhau.</p>
         <div class="cups"><span>☕ Sữa đá</span><span>☕ Latte</span><span>☕ Cà phê Muối</span><span>💛 Tùy tâm</span></div>
@@ -501,6 +502,7 @@ footer a:hover{color:var(--brand)}
   // Link cũ (trước khi app chuyển vào /app/): link xem nhanh #s=… và đường dẫn nhanh → chuyển sang app
   if (/^#(s=|register$|demo$|admin$|members$|legal$)/.test(location.hash)) { location.replace(base + location.hash); return; }
   document.querySelectorAll('[data-app]').forEach(function (a) { a.href = base + a.getAttribute('data-app'); });
+  document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('[data-app]'); if (!a || !window.SSPixel) return; var k = a.getAttribute('data-app'); if (k === '#demo') SSPixel.track('ViewContent', { content_name: 'demo' }); else if (k === '#legal') return; else SSPixel.track('Lead', { content_name: k === '#register' ? 'register' : 'open_app' }); });
 
   var S = [['🏸','Cầu lông','#0FA37F','Ghép cặp'],['⚽','Bóng đá','#16A34A','Chia đội'],['🥎','Pickleball','#D97706','Ghép cặp'],['🎾','Tennis','#65A30D','Ghép cặp'],['🏓','Bóng bàn','#DC2626','Ghép cặp'],['🏐','Bóng chuyền','#2563EB','Chia đội'],['🏀','Bóng rổ','#EA580C','Chia đội'],['🏃','Chạy bộ','#E11D48','Chia nhóm'],['🚴','Đạp xe','#0891B2','Chia nhóm'],['🏊','Bơi lội','#0284C7','Chia nhóm'],['🏋️','Gym','#7C3AED','Chia nhóm'],['⛳','Golf','#15803D','Chia nhóm'],['♟️','Cờ','#475569','Ghép cặp'],['🏅','Môn khác','#FF5A1F','Tự đặt tên']];
   var g = document.getElementById('sportsGrid');

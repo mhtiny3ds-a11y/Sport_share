@@ -223,6 +223,7 @@ function vAccount() {
   <section class="card stack">${secH('Giao diện')}<div class="chips">${[['auto', '🌓 Theo máy'], ['light', '☀️ Sáng'], ['dark', '🌙 Tối']].map(([k, t]) => `<button class="chip ${(DEV.theme || 'auto') === k ? 'on' : ''}" data-act="theme" data-k="${k}">${t}</button>`).join('')}</div></section>
   ${guideLink()}
   ${fanpageBox()}
+  ${window.SSPixel && SSPixel.enabled() ? `<section class="card row between wrap" style="gap:8px"><span class="tiny b">🍪 Cookie đo lường quảng cáo (Meta Pixel): <b>${SSPixel.choice() === 'yes' ? 'đang bật' : 'đang tắt'}</b></span><button class="btn sm ghost" data-act="consentReset">${SSPixel.choice() === 'yes' ? 'Tắt' : 'Đổi lựa chọn'}</button></section>` : ''}
   ${donateBlock()}
   <div class="stack"><button class="btn block ghost" data-act="signOut">↩ Đăng xuất</button></div>
   <p class="foot">Sport Share v${APP.ver}${CLOUD && CLOUD.emulator ? ' · môi trường thử nghiệm' : ''} · <button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button></p>`;
@@ -768,7 +769,7 @@ function vLegal() {
     ${h('1. Sport Share lưu những gì?')}<p>Tài khoản: tên hiển thị, email, ảnh đại diện Google (nếu đăng nhập bằng Google). Trong từng hội: tên hội, môn thể thao, lịch chơi, danh sách hội viên (tên, biểu tượng, trình độ, số điện thoại nếu quản trị nhập), vote đi / không đi, điểm danh, chi phí, công nợ, quỹ hội và tài khoản ngân hàng nhận tiền của hội.</p>
     ${h('2. Dữ liệu nằm ở đâu?')}<p>Dữ liệu hội lưu trên Google Firebase (Cloud Firestore, máy chủ tại Singapore) để các thành viên dùng chung; đăng nhập do Firebase Authentication xử lý, Sport Share không thấy mật khẩu của bạn. Hội mẫu để chơi thử chỉ nằm trong trình duyệt và mất khi tải lại trang.</p>
     ${h('3. Ai xem được gì?')}<p>Chỉ thành viên của hội mới xem được hội đó. Hội viên chỉ thấy công nợ của chính mình; quản trị viên thấy công nợ cả hội và sổ quỹ. Hội viên chỉ tự vote, tự sửa tên/biểu tượng và báo đã chuyển khoản cho chính mình. Link mời và link xem nhanh: ai có link đều mở được, vì vậy chỉ gửi trong nhóm của hội.</p>
-    ${h('4. Không quảng cáo, không bán dữ liệu')}<p>Không quảng cáo, không cookie theo dõi, không công cụ phân tích. Sport Share không bán hay chia sẻ dữ liệu cho bên thứ ba.</p>
+    ${h('4. Không quảng cáo, không bán dữ liệu, cookie đo lường')}<p>Ứng dụng không hiển thị quảng cáo. Sport Share không bán dữ liệu. Để đo hiệu quả quảng cáo của Sport Share trên Facebook/Instagram, trang web có thể dùng <b>Meta Pixel</b>, <b>chỉ khi bạn bấm Đồng ý</b>: Pixel ghi nhận lượt xem trang và các thao tác như tạo tài khoản, lập hội, vào hội (không gửi tên, email, số điện thoại hay dữ liệu hội). Bạn có thể tắt bất cứ lúc nào trong mục Tài khoản.</p>
     ${h('5. Xóa dữ liệu')}<p>Hội viên có thể rời hội bất cứ lúc nào. Người lập hội xóa được toàn bộ hội. Quản trị viên nên tải file sao lưu định kỳ (app nhắc mỗi 30 ngày) để phòng xóa nhầm. Muốn xóa tài khoản, hãy liên hệ qua trang dự án bên dưới.</p>
     ${h('6. Thanh toán và ủng hộ')}<p>Chuyển khoản diễn ra trong ứng dụng ngân hàng của bạn. Sport Share không nhận, không giữ và không lưu thông tin thanh toán nào.</p>
   </article>
