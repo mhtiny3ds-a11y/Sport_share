@@ -1,12 +1,11 @@
-/* Sport Share — hành động, biểu mẫu, điều hướng, khởi động. */
+/* Sport Share — hành động, biểu mẫu, điều hướng, đăng nhập, khởi động. */
 'use strict';
-
-const ADMIN_IDLE = 10 * 60 * 1000; // khu quản trị tự khóa sau 10 phút không thao tác
 
 /* ---------- tiện ích ---------- */
 const curSession = () => { const c = club(); return c && c.sessions.find(s => s.id === UI.sid); };
-const save = () => persist();
 const later = fn => setTimeout(fn, 0);
+const appBase = () => location.href.split('#')[0].split('?')[0];
+const shareBase = appBase;
 async function copyText(t, msg = 'Đã chép!') {
   try { await navigator.clipboard.writeText(t); toast(msg); return; } catch (e) {}
   const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
@@ -16,18 +15,47 @@ async function copyText(t, msg = 'Đã chép!') {
 function applyTheme() { const t = DEV.theme || 'auto'; if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }
 function sheet(fn) { UI.err = ''; UI.sheet = fn; render(); }
 function closeSheet() { UI.sheet = null; UI.editAvatar = null; UI.err = ''; if (UI.confirm === 'delMember') UI.confirm = null; render(); }
-function enterAdmin(c, extra = {}) { DEV.clubId = c.id; DEV.session = { role: 'admin', cid: c.id, at: Date.now() }; save(); go('admin', { atab: 'home', ...extra }); }
-function enterMember(c, m) { DEV.clubId = c.id; DEV.session = { role: 'member', cid: c.id, mid: m.id }; save(); go('member', { tab: 'home' }); }
-function lockIfIdle() {
-  if (DEV.session && DEV.session.role === 'admin' && Date.now() - (DEV.session.at || 0) > ADMIN_IDLE) {
-    DEV.session = null; save(); go('pin', { pinFor: '__admin', pinBack: 'profiles', locked: true }); return true;
-  }
-  if (DEV.session && DEV.session.role === 'admin') DEV.session.at = Date.now();
-  return false;
+function openClub(id, tab) {
+  const c = clubById(id); if (!c) return go('home');
+  DEV.clubId = id; persistLocal();
+  const extra = canAdmin(c) ? { atab: tab || 'home' } : { tab: tab && ['home', 'debt', 'rank', 'info'].includes(tab) ? tab : 'home' };
+  go('club', extra);
+}
+const goHomeOrWelcome = () => go(ME || DEV.local ? 'home' : 'welcome');
+function waitClub(id, then, ms = 15000) { // chờ hội mới xuất hiện từ Firestore rồi mở
+  const t0 = Date.now();
+  const tick = () => { if (CL[id]) return then(); if (Date.now() - t0 > ms) { toast('Đã lưu. Hội sẽ hiện khi có mạng ổn định.'); return go('home'); } setTimeout(tick, 300); };
+  tick();
+}
+function authMsg(e) {
+  const c = (e && e.code) || '';
+  return ({
+    'auth/invalid-email': 'Email không hợp lệ.',
+    'auth/missing-password': 'Nhập mật khẩu.',
+    'auth/weak-password': 'Mật khẩu cần ít nhất 6 ký tự.',
+    'auth/email-already-in-use': 'Email này đã có tài khoản. Hãy đăng nhập (hoặc dùng Quên mật khẩu).',
+    'auth/invalid-credential': 'Email hoặc mật khẩu chưa đúng.',
+    'auth/wrong-password': 'Email hoặc mật khẩu chưa đúng.',
+    'auth/user-not-found': 'Chưa có tài khoản với email này.',
+    'auth/too-many-requests': 'Thử sai nhiều lần. Đợi một lúc rồi thử lại.',
+    'auth/network-request-failed': 'Không có mạng. Kiểm tra kết nối rồi thử lại.',
+    'auth/popup-blocked': 'Trình duyệt chặn cửa sổ đăng nhập Google. Cho phép cửa sổ bật lên rồi thử lại, hoặc đăng nhập bằng email.',
+    'auth/unauthorized-domain': 'Tên miền này chưa được phép đăng nhập (Firebase → Authentication → Settings → Authorized domains).',
+    'auth/operation-not-allowed': 'Cách đăng nhập này chưa được bật trong Firebase.',
+    'auth/web-storage-unsupported': 'Trình duyệt đang chặn lưu dữ liệu. Tắt chế độ ẩn danh hoặc mở bằng Safari/Chrome.',
+  })[c] || ('Không đăng nhập được' + (c ? ` (${c})` : '') + '. Thử lại hoặc dùng cách đăng nhập khác.');
 }
 
 /* ---------- văn bản thông báo / nhắc nợ ---------- */
 function bankLine(c) { return bankReady(c.bank) ? `🏦 ${bankName(c.bank.bin)} · ${c.bank.acct}${c.bank.holder ? ' · ' + c.bank.holder : ''}` : ''; }
+function voteText(c, s) {
+  const vt = voteOf(c, s), n = id => (memberOf(c, id) || {}).name || '?';
+  const L = [`✅ Đi (${vt.going.length}${vt.max ? '/' + vt.max : ''}): ${vt.going.map(n).join(', ') || 'chưa có ai'}`];
+  if (vt.wait.length) L.push(`⏳ Dự bị (${vt.wait.length}): ${vt.wait.map(n).join(', ')}`);
+  L.push(`❌ Không đi (${vt.no.length}): ${vt.no.map(n).join(', ') || '—'}`);
+  if (vt.none.length) L.push(`❔ Chưa vote (${vt.none.length}): ${vt.none.map(n).join(', ')}`);
+  return L;
+}
 function announceText(c, s) {
   const sp = sportOf(c); const { per, total, shares } = sessShares(c, s); const L = [];
   L.push(`${sp.ic} ${c.name.toUpperCase()}`);
@@ -40,27 +68,21 @@ function announceText(c, s) {
     L.push(`💰 Tổng: ${vnd(total)}${per ? ` → mỗi người ${vnd(per)}` : ''}`, '');
     Object.entries(shares).forEach(([mid, a]) => { const m = memberOf(c, mid); if (m) L.push(`${mid === s.payer ? '✅' : '⬜'} ${m.name}: ${vnd(a)}${mid === s.payer ? ' (đã ứng tiền)' : ''}`); });
     if (bankLine(c)) L.push('', bankLine(c), `✍️ Nội dung: ${initials(c.name)} <Tên của bạn>`);
+    if (isCloud(c)) L.push('', '📱 Xem phần của bạn và quét VietQR trong app Sport Share.');
   } else if (s.status === 'cancelled') {
     L.push('', `❌ ${cap1(sp.unit)} này đã HỦY.`);
   } else {
     L.push('', ...voteText(c, s));
-    L.push('👉 Ai chưa vote trả lời ĐI hoặc KHÔNG ĐI nha!');
+    L.push(isCloud(c) ? '👉 Vote ĐI / KHÔNG ĐI ngay trong app Sport Share nha!' : '👉 Ai chưa vote trả lời ĐI hoặc KHÔNG ĐI nha!');
   }
   return L.join('\n');
-}
-function voteText(c, s) {
-  const vt = voteOf(c, s), n = id => (memberOf(c, id) || {}).name || '?';
-  const L = [`✅ Đi (${vt.going.length}${vt.max ? '/' + vt.max : ''}): ${vt.going.map(n).join(', ') || 'chưa có ai'}`];
-  if (vt.wait.length) L.push(`⏳ Dự bị (${vt.wait.length}): ${vt.wait.map(n).join(', ')}`);
-  L.push(`❌ Không đi (${vt.no.length}): ${vt.no.map(n).join(', ') || '—'}`);
-  if (vt.none.length) L.push(`❔ Chưa vote (${vt.none.length}): ${vt.none.map(n).join(', ')}`);
-  return L;
 }
 function reminderText(c, m) {
   const un = unpaidOf(c, m.id).sort((a, b) => a.date.localeCompare(b.date)); const d = debtOf(c, m.id);
   const L = [`Chào ${m.name} 👋`, `${c.name} nhắc nhẹ: bạn còn ${vnd(d)} chưa thanh toán:`];
   un.forEach(x => L.push(`• ${x.label}: ${vnd(x.amount)}`));
   if (bankLine(c)) L.push('', bankLine(c), `✍️ Nội dung: ${transferNote(c, m.name)}`);
+  if (isCloud(c) && m.uid) L.push('📱 Mở app Sport Share để quét VietQR và bấm "Tôi đã chuyển khoản".');
   L.push('Cảm ơn bạn nhiều! 💪');
   return L.join('\n');
 }
@@ -90,7 +112,23 @@ function shareSnapshot(c) {
     r: rankList(c, 'month').list.filter(x => x.n).slice(0, 10).map(x => [x.m.id, x.n]),
   };
 }
-const shareBase = () => location.href.split('#')[0];
+
+/* ---------- lịch điện thoại ---------- */
+function sessTimes(s) {
+  const [y, mo, d] = s.date.split('-').map(Number); const [hh, mm] = (s.time || '19:00').split(':').map(Number);
+  const st = new Date(y, mo - 1, d, hh || 0, mm || 0); return [st, new Date(st.getTime() + 2 * 3600e3)];
+}
+const calDt = d => `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
+const calTitle = (c, s) => `${sportOf(c).ic} ${cap1(sportOf(c).unit)} ${c.name}`;
+function gcalUrl(c, s) {
+  const [st, en] = sessTimes(s), e = encodeURIComponent;
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${e(calTitle(c, s))}&dates=${calDt(st)}/${calDt(en)}&ctz=Asia/Ho_Chi_Minh&location=${e(s.venue || '')}&details=${e((s.note ? s.note + '\n' : '') + 'Sport Share: ' + appBase())}`;
+}
+function icsText(c, s) {
+  const [st, en] = sessTimes(s), x = t => String(t || '').replace(/\\/g, '\\\\').replace(/[,;]/g, m => '\\' + m).replace(/\n/g, '\\n');
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Sport Share//VI', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT', `UID:${s.id}@sportshare`, `DTSTAMP:${calDt(new Date())}`, `DTSTART:${calDt(st)}`, `DTEND:${calDt(en)}`, `SUMMARY:${x(calTitle(c, s))}`, `LOCATION:${x(s.venue)}`, `DESCRIPTION:${x(s.note || '')}`, 'BEGIN:VALARM', 'TRIGGER:-PT2H', 'ACTION:DISPLAY', `DESCRIPTION:${x(calTitle(c, s))}`, 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+}
+function downloadBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
 
 /* ---------- ảnh mã QR để tải về ---------- */
 async function saveQRImage({ title, sub, payload, lines, file }) {
@@ -115,18 +153,18 @@ async function saveQRImage({ title, sub, payload, lines, file }) {
     if (navigator.canShare && navigator.canShare({ files: [f] }) && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
       try { await navigator.share({ files: [f], title }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
     }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    downloadBlob(blob, file);
     toast('Đã tải ảnh mã QR. Mở app ngân hàng, chọn quét mã từ ảnh nhé!');
   } catch (e) { console.error(e); toast('Chưa tải được ảnh. Hãy chụp màn hình mã QR thay nhé!'); }
 }
 
 /* ---------- sao lưu ---------- */
+const plainClub = c => { const o = JSON.parse(JSON.stringify(c, (k, v) => (k && k[0] === '_') ? undefined : v)); return o; };
 function exportData() {
-  const c = club(); const clubs = c ? [c] : Object.values(STORE.clubs);
-  const blob = new Blob([JSON.stringify({ app: 'sportshare', v: 1, at: Date.now(), clubs }, null, 1)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `SportShare-${noTone(c ? c.name : 'tat-ca').replace(/[^A-Za-z0-9]+/g, '-')}-${dayKey()}.json`;
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  const c = club() && UI.view === 'club' ? club() : null; const clubs = c ? [c] : localClubs();
+  if (!clubs.length) return toast('Chưa có hội nào để sao lưu.');
+  const blob = new Blob([JSON.stringify({ app: 'sportshare', v: 2, at: Date.now(), clubs: clubs.map(plainClub) }, null, 1)], { type: 'application/json' });
+  downloadBlob(blob, `SportShare-${noTone(c ? c.name : 'tren-may').replace(/[^A-Za-z0-9]+/g, '-')}-${dayKey()}.json`);
   toast('Đã tải file sao lưu. Hãy cất giữ cẩn thận!');
 }
 async function readImport(file) {
@@ -138,37 +176,65 @@ async function readImport(file) {
   } catch (e) { toast('File không đúng định dạng sao lưu Sport Share.'); }
 }
 
+/* ---------- link mời ---------- */
+async function openJoin(code) {
+  DEV.pendingJoin = code; persistLocal();
+  if (!ME) return go('join', { join: { code } });
+  go('join', { join: { code, state: 'loading' } });
+  let inv = null;
+  try { inv = await CLOUD.get('invites/' + code); } catch (e) { UI.join = { code, state: 'bad', msg: e.code === 'unavailable' ? 'Không có mạng để mở lời mời. Thử lại sau.' : 'Link mời không còn hiệu lực.' }; return render(); }
+  DEV.pendingJoin = null; persistLocal();
+  if (!inv) { UI.join = { code, state: 'bad' }; return render(); }
+  if (CL[inv.clubId]) { toast('Bạn đã ở trong hội này.'); return openClub(inv.clubId); }
+  UI.join = { code, state: 'ok', inv }; render();
+}
+
 /* ---------- hành động (data-act) ---------- */
 const ACT = {
   go: el => go(el.dataset.v),
+  goHome: () => { if (UI.view === 'join') { DEV.pendingJoin = null; persistLocal(); } goHomeOrWelcome(); },
+  goWelcome: () => go('welcome'),
   closeSheet,
   cancelConfirm: () => { UI.confirm = null; UI.importData = null; render(); },
   copy: el => copyText(el.dataset.t),
-  theme: el => { DEV.theme = el.dataset.k; save(); applyTheme(); render(); },
+  theme: el => { DEV.theme = el.dataset.k; persistLocal(); applyTheme(); render(); },
   openLegal: () => { UI.legalBack = UI.view; go('legal'); },
-  closeLegal: () => go(UI.legalBack && UI.legalBack !== 'legal' ? UI.legalBack : 'welcome'),
+  closeLegal: () => go(UI.legalBack && !['legal', 'loading'].includes(UI.legalBack) ? UI.legalBack : (ME || DEV.local ? 'home' : 'welcome')),
   donatePick: el => { UI.donateIdx = Number(el.dataset.i); render(); },
   downloadDonate: () => { const o = DONATE_OPTS[UI.donateIdx ?? 1]; saveQRImage({ title: 'SPORT SHARE ☕', sub: 'Cảm ơn bạn đã mời Team Sport Share ly cafe', payload: vietQR({ bin: DONATE.bin, acct: DONATE.acct, amount: o.amount, note: DONATE.note }), lines: [['Người nhận', DONATE.name + ' · ' + DONATE.bank], ['Số tài khoản', DONATE.acct], ['Ly cafe', o.amount ? o.label : 'Tùy tâm', true], ['Nội dung', DONATE.note]], file: `SportShare-cafe-${o.slug}.png` }); },
-  demo: async () => { const c = await seedDemo(); DEV.clubId = c.id; save(); toast('Đã mở hội mẫu. Chọn tên hoặc đăng nhập quản trị.'); go('profiles'); },
-  toMembers: () => { const c = club(); if (DEV.session && DEV.session.role === 'member' && curMember()) return go('member'); go(c ? 'profiles' : 'clubs'); },
-  pickClub: el => { DEV.clubId = el.dataset.id; save(); go('profiles'); },
-  pinFor: el => go('pin', { pinFor: el.dataset.mid, pinBack: 'profiles', locked: false }),
-  pinKey: el => {
-    const k = el.dataset.k;
-    if (k === 'del') { UI.pin = UI.pin.slice(0, -1); UI.pinBad = false; return render(); }
-    if (UI.pin.length >= 4) return;
-    UI.pin += k; UI.pinBad = false; render();
-    if (UI.pin.length === 4) setTimeout(() => {
-      const c = club(); if (!c) return go('welcome');
-      if (UI.pinFor === '__admin') { if (UI.pin === c.admin.pin) return enterAdmin(c); }
-      else { const m = memberOf(c, UI.pinFor); if (m && UI.pin === m.pin) return enterMember(c, m); }
-      UI.pin = ''; UI.pinBad = true; render();
-    }, 160);
+
+  /* đăng nhập */
+  authMode: el => go('auth', { authMode: el.dataset.m }),
+  googleSignIn: async () => {
+    if (!CLOUD) return;
+    UI.busy = true; UI.err = ''; render();
+    try { await CLOUD.google(); }
+    catch (e) { if (!/popup-closed|cancelled-popup/.test(e.code || '')) UI.err = authMsg(e); }
+    UI.busy = false; render();
   },
-  switchUser: () => { DEV.session = null; save(); go('profiles'); },
-  logout: () => { DEV.session = null; save(); go('welcome'); },
-  lockAdmin: () => { DEV.session = null; save(); toast('Đã khóa khu quản trị.'); go('profiles'); },
-  toMemberView: () => { DEV.session = null; save(); go('profiles'); },
+  signOut: async () => { DEV.clubId = null; DEV.joins = []; persistLocal(); if (CLOUD) await CLOUD.signOut(); toast('Đã đăng xuất.'); },
+  useLocal: () => { DEV.local = true; persistLocal(); if (UI.after === 'register') { UI.after = null; return go('register', { reg: { step: 1, days: [], time: '19:00' } }); } go('home'); },
+  exitLocal: () => { DEV.local = false; DEV.clubId = null; persistLocal(); go('welcome'); },
+  demo: async () => { const c = await seedDemo(); if (!ME) DEV.local = true; persistLocal(); toast('Đã mở hội mẫu. Bạn là quản trị, đóng vai Minh Quân.'); openClub(c.id); },
+
+  /* trang của tôi */
+  openClub: el => openClub(el.dataset.cid, el.dataset.t),
+  openSessionOf: el => { DEV.clubId = el.dataset.cid; persistLocal(); go('session', { sid: el.dataset.sid }); },
+  joinSheet: () => sheet(() => joinSheet()),
+  cancelJoin: async el => {
+    const id = el.dataset.cid;
+    if (CLOUD && ME) await commitOps([{ t: 'delete', p: `clubs/${id}/requests/${ME.uid}` }]);
+    DEV.joins = DEV.joins.filter(j => j.clubId !== id); persistLocal(); toast('Đã hủy yêu cầu.');
+  },
+  joinClaim: async () => {
+    const j = UI.join; if (!j || !j.inv) return;
+    UI.busy = true; render();
+    const ok = await claimInvite(j.code, j.inv);
+    UI.busy = false;
+    if (!ok) { UI.err = 'Không vào được hội. Có thể link đã được người khác dùng, hãy nhờ quản trị gửi link mới.'; return render(); }
+    toast(`Chào mừng bạn đến ${j.inv.clubName}! 🎉`); waitClub(j.inv.clubId, () => openClub(j.inv.clubId));
+  },
+  uploadSheet: el => { const c = STORE.clubs[el.dataset.cid]; if (c) sheet(() => uploadSheet(c)); },
 
   /* lập hội */
   startReg: () => go('register', { reg: { step: 1, days: [], time: '19:00' } }),
@@ -178,19 +244,30 @@ const ACT = {
     if (r.sport === 'other' && !(r.sportName || '').trim()) { UI.err = 'Nhập tên môn thể thao nhé.'; return render(); }
     UI.err = ''; r.step = 2; render(); window.scrollTo(0, 0);
   },
-  regBack: () => { UI.reg.step = Math.max(1, UI.reg.step - 1); UI.err = ''; render(); },
+  regBack: () => { if (UI.reg.step <= 1) return goHomeOrWelcome(); UI.reg.step -= 1; UI.err = ''; render(); },
 
-  /* hội viên */
-  tab: el => { UI.tab = el.dataset.t; UI.err = ''; render(); window.scrollTo(0, 0); },
+  /* trong hội */
+  tab: el => { UI.tab = el.dataset.t; UI.err = ''; UI.confirm = null; render(); window.scrollTo(0, 0); },
+  atab: el => { UI.atab = el.dataset.t; UI.sheet = null; UI.err = ''; UI.confirm = null; if (UI.view !== 'club') go('club'); else { render(); window.scrollTo(0, 0); } },
+  backToClub: () => go('club', { atab: UI.atab === 'home' ? 'home' : 'sessions' }),
   rsvp: el => {
-    const c = club(), m = curMember(); if (!c || !m) return;
+    const c = clubById(el.dataset.cid) || club(); const mid = myMid(c); if (!c || !mid) return;
     const s = c.sessions.find(x => x.id === el.dataset.sid); if (!s || s.status !== 'open') return;
-    const r = setVote(s, m.id, el.dataset.r); const vt = voteOf(c, s);
-    save(); toast(r === 'yes' ? (vt.wait.includes(m.id) ? `Đã đủ chỗ, bạn ở dự bị số ${vt.wait.indexOf(m.id) + 1}.` : 'Đã vote ĐI 💪') : r === 'no' ? 'Đã vote KHÔNG ĐI.' : 'Đã bỏ vote.');
+    const r = setVote(s, mid, el.dataset.r); const vt = voteOf(c, s);
+    save(); toast(r === 'yes' ? (vt.wait.includes(mid) ? `Đã đủ chỗ, bạn ở dự bị số ${vt.wait.indexOf(mid) + 1}.` : 'Đã vote ĐI 💪') : r === 'no' ? 'Đã vote KHÔNG ĐI.' : 'Đã bỏ vote.');
   },
-  viewSession: el => { const c = club(); const s = c && c.sessions.find(x => x.id === el.dataset.sid); if (s) sheet(() => sessionSheet(club(), club().sessions.find(x => x.id === s.id), curMember() && curMember().id)); },
+  viewSession: el => { const id = el.dataset.cid || DEV.clubId, sid = el.dataset.sid; sheet(() => { const c = clubById(id), s = c && c.sessions.find(x => x.id === sid); return s ? sessionSheet(c, s, myMid(c)) : empty('🗓️', 'Buổi này không còn.'); }); },
+  calSheet: el => { const id = el.dataset.cid || DEV.clubId, sid = el.dataset.sid; sheet(() => { const c = clubById(id), s = c && c.sessions.find(x => x.id === sid); return s ? calSheet(c, s) : ''; }); },
+  icsDownload: el => { const c = clubById(el.dataset.cid), s = c && c.sessions.find(x => x.id === el.dataset.sid); if (!s) return; downloadBlob(new Blob([icsText(c, s)], { type: 'text/calendar' }), `SportShare-${s.date}.ics`); toast('Đã tải file lịch. Mở file để thêm vào lịch điện thoại.'); },
   rankPeriod: el => { UI.rankPeriod = el.dataset.p; render(); },
-  myAvatar: el => { const m = curMember(); if (!m) return; m.avatar = el.dataset.a; save(); render(); },
+  myAvatar: el => { const m = myMember(club()); if (!m) return; m.avatar = el.dataset.a; save(); render(); },
+  reportPaid: () => {
+    const c = club(), mid = myMid(c); if (!c || !mid) return;
+    const un = unpaidOf(c, mid).filter(x => !x.reportedAt); if (!un.length) return;
+    const now = Date.now(); un.forEach(x => x.reportedAt = now); save(); toast('Đã báo quản trị viên. Cảm ơn bạn! 💪');
+  },
+  askLeave: () => { UI.confirm = 'leave'; render(); },
+  doLeave: async () => { const c = club(); UI.confirm = null; if (!c) return; const ok = await leaveClub(c); if (ok) { DEV.clubId = null; persistLocal(); toast(`Đã rời ${c.name}.`); go('home'); } },
   downloadPayQR: el => {
     const c = club(), m = memberOf(c, el.dataset.mid); if (!c || !m || !bankReady(c.bank)) return;
     const d = debtOf(c, m.id), note = transferNote(c, m.name);
@@ -198,9 +275,7 @@ const ACT = {
   },
 
   /* quản trị: điều hướng */
-  atab: el => { UI.atab = el.dataset.t; UI.sheet = null; UI.err = ''; UI.confirm = null; if (UI.view !== 'admin') go('admin'); else { render(); window.scrollTo(0, 0); } },
-  backToAdmin: () => go('admin', { atab: UI.atab === 'home' ? 'home' : 'sessions' }),
-  dismissFresh: () => { const c = club(); if (c) { c.setupDone = true; save(); } UI.fresh = false; render(); },
+  dismissFresh: () => { const c = club(); if (c) { c.setupDone = true; save(); } render(); },
   bulkSheet: () => sheet(() => bulkSheet()),
   sessFilter: el => { UI.sessFilter = el.dataset.k; render(); },
   moneyTab: el => { UI.moneyTab = el.dataset.k; render(); },
@@ -214,10 +289,14 @@ const ACT = {
   adminVote: el => { const c = club(), s = curSession(); if (!s || s.status !== 'open') return; const m = memberOf(c, el.dataset.mid); const r = setVote(s, el.dataset.mid, el.dataset.r); save(); toast(`${m ? m.name : ''}: ${r === 'yes' ? '✅ đi' : r === 'no' ? '❌ không đi' : 'bỏ vote'}`); },
   copyVoteResult: () => { const c = club(), s = curSession(), sp = sportOf(c); copyText([`🗳️ KẾT QUẢ VOTE · ${cap1(sp.unit)} ${fmtDate(s.date)}${s.time ? ' ' + s.time : ''}`, s.venue ? `📍 ${s.venue}` : '', ...voteText(c, s)].filter(Boolean).join('\n'), 'Đã chép kết quả vote.'); },
   copyVoteInvite: async () => {
-    const c = club(), s = curSession(), sp = sportOf(c); const code = await encodeShare(shareSnapshot(c));
-    copyText([`🗳️ VOTE ${cap1(sp.unit).toUpperCase()} · ${c.name}`, `📅 ${fmtDateLong(s.date)}${s.time ? ' · ' + s.time : ''}`, s.venue ? `📍 ${s.venue}` : '', s.note ? `📝 ${s.note}` : '', s.max ? `👥 Tối đa ${s.max} người, ai vote ĐI trước giữ chỗ trước.` : ''].filter(Boolean).concat(['', 'Trả lời ĐI hoặc KHÔNG ĐI trong nhóm, hoặc bấm link, chọn tên mình rồi vote:', `${shareBase()}#s=${code}`]).join('\n'), 'Đã chép lời mời vote, dán vào nhóm Zalo nhé!');
+    const c = club(), s = curSession(), sp = sportOf(c);
+    const head = [`🗳️ VOTE ${cap1(sp.unit).toUpperCase()} · ${c.name}`, `📅 ${fmtDateLong(s.date)}${s.time ? ' · ' + s.time : ''}`, s.venue ? `📍 ${s.venue}` : '', s.note ? `📝 ${s.note}` : '', s.max ? `👥 Tối đa ${s.max} người, ai vote ĐI trước giữ chỗ trước.` : ''].filter(Boolean);
+    let tail;
+    if (isCloud(c)) tail = ['', '📱 Vote ĐI / KHÔNG ĐI ngay trong app Sport Share:', appBase(), 'Ai chưa vào app thì trả lời trong nhóm, mình ghi hộ.'];
+    else { const code = await encodeShare(shareSnapshot(c)); tail = ['', 'Trả lời ĐI hoặc KHÔNG ĐI trong nhóm, hoặc bấm link, chọn tên mình rồi vote:', `${shareBase()}#s=${code}`]; }
+    copyText(head.concat(tail).join('\n'), 'Đã chép lời mời vote, dán vào nhóm Zalo nhé!');
   },
-  guestSheet: () => sheet(() => guestSheet(club(), curSession())),
+  guestSheet: () => sheet(() => guestSheet(club())),
   delGuest: el => { const s = curSession(); s.guests.splice(Number(el.dataset.i), 1); s.teams = null; save(); render(); },
   addCost: el => { const s = curSession(); s.costs ||= []; s.costs.push({ label: el.dataset.l || 'Chi phí khác', amount: 0 }); save(); render(); later(() => { const ins = document.querySelectorAll('[data-chg="cost"][data-f="amount"]'); const last = ins[ins.length - 1]; if (last) last.focus(); }); },
   delCost: el => { const s = curSession(); s.costs.splice(Number(el.dataset.i), 1); save(); render(); },
@@ -228,8 +307,9 @@ const ACT = {
     const c = club(), s = curSession(), sp = sportOf(c);
     const players = [...s.attendees, ...(s.guests || []).map(g => 'g:' + g.name)];
     const lv = id => { const m = memberOf(c, id); return m ? Number(m.level) || 3 : 3; };
-    if (sp.split === 'pairs' && s.teamsMode !== 'teams') { s.teams = makePairs(players, lv); s.teamsMode = 'pairs'; }
-    else { s.teams = makeTeams(players, sp.split === 'pairs' ? 2 : (s.teamsK || sp.teams || 2), lv); s.teamsMode = 'teams'; }
+    // Firestore không lưu được mảng lồng mảng → mỗi đội là { m: [...] }
+    if (sp.split === 'pairs' && s.teamsMode !== 'teams') { s.teams = makePairs(players, lv).map(m => ({ m })); s.teamsMode = 'pairs'; }
+    else { s.teams = makeTeams(players, sp.split === 'pairs' ? 2 : (s.teamsK || sp.teams || 2), lv).map(m => ({ m })); s.teamsMode = 'teams'; }
     save(); render();
   },
   settle: () => {
@@ -247,7 +327,7 @@ const ACT = {
   delSession: () => { UI.confirm = 'delSession'; render(); },
   doConfirm: () => {
     const c = club(), s = curSession(); const k = UI.confirm; UI.confirm = null; if (!s) return render();
-    if (k === 'delSession') { c.sessions = c.sessions.filter(x => x.id !== s.id); c.charges = c.charges.filter(x => x.ref !== s.id); save(); toast('Đã xóa.'); return go('admin', { atab: 'sessions' }); }
+    if (k === 'delSession') { c.sessions = c.sessions.filter(x => x.id !== s.id); c.charges = c.charges.filter(x => x.ref !== s.id); save(); toast('Đã xóa.'); return go('club', { atab: 'sessions' }); }
     if (k === 'reopenSession') { c.charges = c.charges.filter(x => x.ref !== s.id); s.status = 'open'; s.settledAt = null; save(); toast('Đã mở lại, công nợ của buổi đã được gỡ.'); return render(); }
     if (k === 'cancelSession') { s.status = 'cancelled'; save(); toast('Đã hủy.'); return render(); }
     render();
@@ -275,91 +355,139 @@ const ACT = {
   pickAvatar: el => { const f = el.closest('form'); f.querySelector('input[name="avatar"]').value = el.dataset.a; UI.editAvatar = el.dataset.a; f.querySelectorAll('[data-act="pickAvatar"]').forEach(b => b.classList.toggle('on', b === el)); },
   toggleActive: el => { const m = memberOf(club(), el.dataset.mid); m.active = m.active === false; save(); toast(m.active ? 'Đã cho quay lại hội.' : 'Đã chuyển sang nghỉ. Lịch sử vẫn được giữ.'); },
   delMember: () => { UI.confirm = 'delMember'; render(); },
-  doDelMember: el => { const c = club(), id = el.dataset.mid; c.members = c.members.filter(m => m.id !== id); c.charges = c.charges.filter(x => x.mid !== id); c.sessions.forEach(s => { s.attendees = s.attendees.filter(x => x !== id); if (s.rsvp) delete s.rsvp[id]; }); UI.confirm = null; UI.sheet = null; save(); toast('Đã xóa hội viên.'); },
-  copyPins: () => { const c = club(); copyText([`🔑 MÃ PIN ${c.name.toUpperCase()}`, ...activeMembers(c).map(m => `${m.name}: ${m.pin}`)].join('\n'), 'Đã chép danh sách PIN. Chỉ gửi riêng cho từng người nhé!'); },
+  doDelMember: async el => {
+    const c = club(), id = el.dataset.mid, m = memberOf(c, id);
+    if (isCloud(c) && m && m.uid) await unlinkMember(c, m);
+    c.members = c.members.filter(x => x.id !== id); c.charges = c.charges.filter(x => x.mid !== id);
+    c.sessions.forEach(s => { s.attendees = s.attendees.filter(x => x !== id); if (s.rsvp) delete s.rsvp[id]; if (s.rsvpAt) delete s.rsvpAt[id]; });
+    if (c.meMid === id) c.meMid = null;
+    UI.confirm = null; UI.sheet = null; save(); toast('Đã xóa hội viên.');
+  },
+  setMe: el => { const c = club(); c.meMid = c.meMid === el.dataset.mid ? null : el.dataset.mid; save(); toast(c.meMid ? 'Đã đánh dấu đây là bạn.' : 'Đã bỏ đánh dấu.'); },
+  groupInvite: async () => {
+    const c = club(); if (!isCloud(c)) return;
+    if (!c.groupInvite) { const code = await makeInvite(c, null); if (!code) return; c.groupInvite = code; save(); }
+    copyText(`${sportOf(c).ic} Mời bạn vào hội ${c.name} trên Sport Share!\nBấm link, đăng nhập bằng Google hoặc email rồi gửi yêu cầu, mình sẽ duyệt:\n${appBase()}#join=${c.groupInvite}`, 'Đã chép link mời chung. Dán vào nhóm Zalo nhé!');
+  },
+  personalInvite: async el => {
+    const c = club(), m = memberOf(c, el.dataset.mid); if (!c || !m || m.uid) return;
+    if (!m.invite) { const code = await makeInvite(c, m.id); if (!code) return; m.invite = code; save(); }
+    copyText(`Chào ${m.name} 👋 Mời bạn vào hội ${c.name} trên Sport Share.\nBấm link, đăng nhập (Google hoặc email) là vào hội ngay, xem lịch, vote và công nợ của bạn:\n${appBase()}#join=${m.invite}\n(Link dành riêng cho ${m.name}, đừng gửi cho người khác nhé.)`, `Đã chép link mời riêng cho ${m.name}. Gửi tin nhắn riêng nhé!`);
+  },
+  approveReq: async el => {
+    const c = club(), r = (c.requests || []).find(x => x.uid === el.dataset.uid); if (!r) return;
+    const sel = document.getElementById('ap-' + r.uid); await approveRequest(c, r, sel && sel.value ? sel.value : null);
+  },
+  rejectReq: async el => { const c = club(), r = (c.requests || []).find(x => x.uid === el.dataset.uid); if (r) await rejectRequest(c, r); },
+  unlinkMember: async el => { const c = club(), m = memberOf(c, el.dataset.mid); if (m && await unlinkMember(c, m)) { UI.sheet = null; toast(`Đã gỡ tài khoản khỏi ${m.name}.`); } },
+  toggleAdminRole: async el => { const c = club(), m = memberOf(c, el.dataset.mid); if (m && m.uid) { await setAdmin(c, m, !(c.admins || []).includes(m.uid)); UI.sheet = null; render(); } },
 
   /* cài đặt */
   shareLink: async () => { const c = club(); const code = await encodeShare(shareSnapshot(c)); copyText(`${sportOf(c).ic} ${c.name} · lịch & công nợ (cập nhật ${fmtDate(dayKey())}):\n${shareBase()}#s=${code}`, 'Đã chép link xem nhanh. Gửi vào nhóm của hội nhé!'); },
   previewShared: () => { UI.shared = shareSnapshot(club()); UI.sharedMid = null; UI.sharedPreview = true; go('shared'); },
-  closePreview: () => { UI.sharedPreview = false; UI.shared = null; go('admin', { atab: 'settings' }); },
+  closePreview: () => { UI.sharedPreview = false; UI.shared = null; go('club', { atab: 'settings' }); },
   sharedVote: el => {
     const d = UI.shared, u = sharedUps(d)[Number(el.dataset.i)], me = d.m.find(x => x[0] === UI.sharedMid); if (!u || !me) return;
     const sp = sportOf(d); const yes = el.dataset.r === 'yes';
     copyText(`🗳️ ${me[1]}: ${yes ? '✅ ĐI' : '❌ KHÔNG ĐI'} · ${cap1(sp.unit)} ${fmtDate(u.date)}${u.time ? ' ' + u.time : ''}${u.venue ? ' · ' + u.venue : ''}`, `Đã chép “${yes ? 'ĐI' : 'KHÔNG ĐI'}”. Dán vào nhóm Zalo để quản trị viên ghi nhận.`);
   },
   sharedPick: el => { UI.sharedMid = el.dataset.mid || null; render(); window.scrollTo(0, 0); },
-  leaveShared: () => { UI.shared = null; try { history.replaceState(null, '', shareBase()); } catch (e) {} go('welcome'); },
+  leaveShared: () => { UI.shared = null; try { history.replaceState(null, '', appBase()); } catch (e) {} route(true); },
   exportData,
   doImport: () => {
     const d = UI.importData; if (!d) return;
-    d.clubs.forEach(c => { STORE.clubs[c.id] = normalizeClub(c); });
-    DEV.clubId = d.clubs[0].id; UI.confirm = null; UI.importData = null; save();
-    toast(`Đã khôi phục ${d.clubs.length} hội.`); go(isAdmin() ? 'admin' : 'profiles');
+    d.clubs.forEach(c => { const x = normalizeClub(JSON.parse(JSON.stringify(c))); ['owner', 'admins', 'memberUids', 'uidMid', 'joinVia', 'groupInvite'].forEach(k => delete x[k]); x.owner = 'local'; x.members.forEach(m => { delete m.uid; delete m.invite; delete m.pin; }); STORE.clubs[x.id] = x; });
+    if (!ME) DEV.local = true;
+    UI.confirm = null; UI.importData = null; persistLocal();
+    toast(`Đã khôi phục ${d.clubs.length} hội vào máy này.`); go('home');
   },
   askDelClub: () => { UI.confirm = 'delClub'; render(); },
-  doDelClub: () => { delete STORE.clubs[DEV.clubId]; DEV.clubId = null; DEV.session = null; save(); toast('Đã xóa hội khỏi máy.'); go('welcome'); },
+  doDelClub: async () => {
+    const c = club(); UI.confirm = null; if (!c) return;
+    if (isCloud(c)) { if (!(await deleteCloudClub(c))) return render(); }
+    else { delete STORE.clubs[c.id]; }
+    DEV.clubId = null; persistLocal(); toast('Đã xóa hội.'); go('home');
+  },
 };
 
 /* ---------- biểu mẫu (data-form) ---------- */
 const FORMS = {
-  async adminLogin(v) {
-    const login = normLogin(v.login), h = await hashPw(v.pass || '');
-    const found = Object.values(STORE.clubs).filter(c => normLogin(c.admin.login) === login && c.admin.pw === h);
-    if (!found.length) { UI.err = 'Sai thông tin đăng nhập, hoặc hội chưa có trên máy này.'; return render(); }
-    if (found.length === 1) return enterAdmin(found[0]);
-    sheet(() => `<h2 class="h2 disp">Chọn hội</h2><p class="muted b">Tài khoản này quản lý ${found.length} hội.</p><div class="stack">${found.map(c => `<button class="choice" data-act="adminPick" data-id="${c.id}"><span class="ic">${sportOf(c).ic}</span><span><b>${esc(c.name)}</b><span class="tiny muted b">${esc(sportOf(c).name)}</span></span></button>`).join('')}</div>`);
+  async auth(v, f) {
+    const m = f.dataset.m; UI.authEmail = (v.email || '').trim(); UI.authName = (v.name || '').trim();
+    if (!UI.authEmail) { UI.err = 'Nhập email.'; return render(); }
+    UI.busy = true; UI.err = ''; render();
+    try {
+      if (m === 'reset') { await CLOUD.resetPassword(UI.authEmail); UI.busy = false; toast('Đã gửi link đặt lại mật khẩu. Kiểm tra hộp thư (cả mục Spam).'); return go('auth', { authMode: 'login' }); }
+      if (m === 'register') {
+        if (!UI.authName) { UI.busy = false; UI.err = 'Nhập tên hiển thị.'; return render(); }
+        const u = await CLOUD.emailSignUp(UI.authName, UI.authEmail, v.pass || '');
+        if (ME && u && ME.uid === u.uid) { ME.name = u.name; }
+      } else await CLOUD.emailSignIn(UI.authEmail, v.pass || '');
+    } catch (e) { UI.err = authMsg(e); }
+    UI.busy = false; render();
   },
-  async forgot(v) {
-    const login = normLogin(v.login);
-    if ((v.pass || '').length < 6) { UI.err = 'Mật khẩu mới cần ít nhất 6 ký tự.'; return render(); }
-    const found = Object.values(STORE.clubs).filter(c => normLogin(c.admin.login) === login && c.admin.pin === v.apin);
-    if (!found.length) {
-      UI.forgotTries = (UI.forgotTries || 0) + 1;
-      if (UI.forgotTries >= 5) { UI.forgotLock = Date.now() + 60000; UI.forgotTries = 0; setTimeout(render, 60500); }
-      UI.err = 'Thông tin chưa đúng.'; return render();
-    }
-    const h = await hashPw(v.pass); found.forEach(c => c.admin.pw = h); save(); toast('Đã đặt mật khẩu mới.'); go('adminLogin');
+  joinLink(v) {
+    const t = String(v.link || '').trim(); const m = t.match(/join=([A-Za-z0-9]+)/) || t.match(/^([A-Za-z0-9]{8,})$/);
+    if (!m) { UI.err = 'Link chưa đúng. Link mời có dạng …/app/#join=…'; return render(); }
+    UI.sheet = null; if (!ME && CLOUD) { DEV.pendingJoin = m[1]; persistLocal(); return go('welcome'); }
+    if (!CLOUD) { UI.err = 'Đăng nhập chưa được bật trên trang này.'; return render(); }
+    openJoin(m[1]);
   },
-  reg2(v, f) {
-    const r = UI.reg; r.name = (v.name || '').trim(); r.venue = (v.venue || '').trim(); r.time = v.time || '';
+  async joinReq(v) {
+    const j = UI.join; if (!j || !j.inv) return;
+    UI.busy = true; render();
+    const ok = await requestJoin(j.code, j.inv, (v.name || '').trim());
+    UI.busy = false; if (ok) UI.join = { ...j, state: 'sent' }; else UI.err = 'Chưa gửi được yêu cầu. Link có thể đã hết hiệu lực.';
+  },
+  async myName(v) {
+    const name = (v.name || '').trim().slice(0, 40); if (!name || !ME) return;
+    const u = await CLOUD.setName(name); if (u) ME.name = u.name; toast('Đã lưu tên.');
+  },
+  myClubName(v) { const m = myMember(club()); const name = (v.name || '').trim().slice(0, 40); if (!m || !name) return; m.name = name; save(); toast('Đã lưu.'); },
+  async upload(v, f) {
+    const lc = STORE.clubs[f.dataset.cid]; if (!lc || !ME) return;
+    UI.busy = true; render();
+    const id = await uploadLocalClub(lc, v.me || null);
+    UI.busy = false;
+    if (!id) { UI.err = 'Chưa tải lên được. Kiểm tra mạng rồi thử lại.'; return render(); }
+    delete STORE.clubs[lc.id]; UI.sheet = null; persistLocal();
+    toast(`Đã đưa “${lc.name}” lên đám mây! Giờ gửi link mời cho hội viên.`);
+    waitClub(id, () => openClub(id, 'members'));
+  },
+  async reg2(v, f) {
+    const r = UI.reg; r.name = (v.name || '').trim().slice(0, 60); r.venue = (v.venue || '').trim(); r.time = v.time || '';
     r.days = [...f.querySelectorAll('input[name="days"]:checked')].map(i => Number(i.value));
     if (!r.name) { UI.err = 'Đặt tên cho hội nhé.'; return render(); }
-    UI.err = ''; r.step = 3; render(); window.scrollTo(0, 0);
-  },
-  async reg3(v) {
-    const r = UI.reg; r.aname = (v.name || '').trim(); r.login = (v.login || '').trim();
-    if (!r.aname) { UI.err = 'Nhập tên hiển thị.'; return render(); }
-    if (!normLogin(r.login)) { UI.err = 'Nhập số điện thoại hoặc email để đăng nhập.'; return render(); }
-    if ((v.pass || '').length < 6) { UI.err = 'Mật khẩu cần ít nhất 6 ký tự.'; return render(); }
-    if (!validPin(v.apin)) { UI.err = 'Mã PIN quản trị gồm đúng 4 chữ số.'; return render(); }
-    const c = normalizeClub({ id: uid('club_'), sport: r.sport, sportName: r.sport === 'other' ? (r.sportName || '').trim() : '', name: r.name, createdAt: Date.now(),
-      admin: { name: r.aname, login: r.login, pw: await hashPw(v.pass), pin: v.apin },
-      schedule: { days: r.days || [], time: r.time || '19:00', venue: r.venue || '' }, settings: { round: 1000 } });
-    STORE.clubs[c.id] = c; enterAdmin(c, { fresh: true, reg: { step: 1 } });
-    toast(`Đã lập hội ${c.name}! 🎉`);
-  },
-  myPin(v) {
-    const m = curMember(); if (!m) return;
-    if (v.old !== m.pin) { UI.err = 'PIN hiện tại chưa đúng.'; return render(); }
-    if (!validPin(v.pin)) { UI.err = 'PIN mới gồm đúng 4 chữ số.'; return render(); }
-    m.pin = v.pin; UI.err = ''; save(); toast('Đã đổi mã PIN.');
+    const fields = { sport: r.sport, sportName: r.sport === 'other' ? (r.sportName || '').trim() : '', name: r.name, schedule: { days: r.days, time: r.time || '19:00', venue: r.venue || '' }, settings: { round: 1000 }, bank: { bin: '', acct: '', holder: '' } };
+    if (ME && CLOUD) {
+      UI.busy = true; render();
+      const id = await createCloudClub(fields, !!v.withMe);
+      UI.busy = false; if (!id) { UI.err = 'Chưa lập được hội. Kiểm tra mạng rồi thử lại.'; return render(); }
+      toast(`Đã lập hội ${r.name}! 🎉`);
+      waitClub(id, () => openClub(id));
+      return;
+    }
+    const c = normalizeClub({ id: uid('club_'), owner: 'local', createdAt: Date.now(), ...fields });
+    STORE.clubs[c.id] = c; DEV.local = true; persistLocal();
+    toast(`Đã lập hội ${c.name}! 🎉`); openClub(c.id);
   },
   session(v) {
     const c = club(); if (!v.date) { UI.err = 'Chọn ngày.'; return render(); }
+    const max = Math.max(0, parseInt(v.max, 10) || 0);
     if (UI.editSid) {
-      const s = c.sessions.find(x => x.id === UI.editSid); Object.assign(s, { date: v.date, time: v.time, venue: (v.venue || '').trim(), note: (v.note || '').trim(), max: parseInt(v.max, 10) || 0 });
+      const s = c.sessions.find(x => x.id === UI.editSid); Object.assign(s, { date: v.date, time: v.time, venue: (v.venue || '').trim(), note: (v.note || '').trim(), max });
       UI.sheet = null; save(); toast('Đã lưu.'); return;
     }
     const prev = c.sessions.filter(s => (s.costs || []).length).sort((a, b) => b.date.localeCompare(a.date))[0];
     const costs = prev ? prev.costs.map(x => ({ label: x.label, amount: x.amount })) : sportOf(c).costs.map(l => ({ label: l, amount: 0 }));
-    const s = { id: uid('s_'), date: v.date, time: v.time, venue: (v.venue || '').trim(), note: (v.note || '').trim(), max: parseInt(v.max, 10) || 0, status: 'open', rsvp: {}, rsvpAt: {}, attendees: [], guests: [], costs, split: 'equal', payer: prev ? prev.payer || '' : '', teams: null, createdAt: Date.now() };
-    c.sessions.push(s); if (v.venue) c.schedule.venue = c.schedule.venue || v.venue.trim();
+    const s = { id: uid('s_'), date: v.date, time: v.time, venue: (v.venue || '').trim(), note: (v.note || '').trim(), max, status: 'open', rsvp: {}, rsvpAt: {}, attendees: [], guests: [], costs, split: 'equal', payer: prev ? prev.payer || '' : '', teams: null, createdAt: Date.now() };
+    c.sessions.push(s); if (v.venue && !c.schedule.venue) c.schedule.venue = v.venue.trim();
     save(); toast(`Đã tạo ${sportOf(c).unit}. ${prev ? 'Chi phí lấy theo buổi trước, sửa nếu cần.' : 'Nhập chi phí khi có nhé.'}`);
     go('session', { sid: s.id });
   },
   guest(v) {
     const s = curSession(); const name = (v.name || '').trim(); if (!name) return;
-    s.guests ||= []; s.guests.push({ name, host: v.host || '' }); s.teams = null; UI.sheet = null; save(); render();
+    s.guests ||= []; s.guests.push({ name, host: v.host || '' }); s.teams = null; UI.sheet = null; save();
   },
   charge(v, f) {
     const c = club(); const kind = f.dataset.k; const amount = parseMoney(v.amount); const label = (v.label || '').trim();
@@ -381,28 +509,27 @@ const FORMS = {
     const names = [...new Set(String(v.names || '').split(/[\n,;]+/).map(x => x.replace(/^\s*[\d.)\-•*]+\s*/, '').trim()).filter(Boolean))].slice(0, 200);
     if (!names.length) { UI.err = 'Dán ít nhất một tên, mỗi dòng một người.'; return render(); }
     const fresh = names.filter(n => !have.has(noTone(n).toLowerCase()));
-    fresh.forEach(name => c.members.push({ id: uid('m_'), name: name.slice(0, 40), phone: '', pin: randPin(), level: 3, avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)], active: true, joinedAt: Date.now() }));
+    fresh.forEach((name, i) => c.members.push({ id: uid('m_'), name: name.slice(0, 40), phone: '', level: 3, avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)], active: true, joinedAt: Date.now() + i }));
     UI.sheet = null; UI.err = ''; save();
     toast(`Đã thêm ${fresh.length} hội viên${names.length > fresh.length ? `, bỏ qua ${names.length - fresh.length} tên đã có` : ''}.`);
   },
   member(v, f, sub) {
-    const c = club(); const id = f.dataset.mid; const name = (v.name || '').trim();
+    const c = club(); const id = f.dataset.mid; const name = (v.name || '').trim().slice(0, 40);
     if (!name) { UI.err = 'Nhập tên hội viên.'; return render(); }
-    if (!validPin(v.pin)) { UI.err = 'Mã PIN gồm đúng 4 chữ số.'; return render(); }
-    const data = { name, phone: (v.phone || '').trim(), pin: v.pin, level: Number(v.level) || 3, avatar: v.avatar || '🙂' };
+    const data = { name, phone: (v.phone || '').trim(), level: Number(v.level) || 3, avatar: v.avatar || '🙂' };
     if (id) { Object.assign(memberOf(c, id), data); toast('Đã lưu.'); }
     else {
       c.members.push({ id: uid('m_'), ...data, active: true, joinedAt: Date.now() });
       if (sub && sub.value === '1') { // thêm & nhập tiếp: mở lại form trống
-        UI.editAvatar = null; UI.err = ''; save(); UI.sheet = () => memberSheet(club(), null); toast(`Đã thêm ${name} · PIN ${v.pin}. Nhập người tiếp theo.`);
+        UI.editAvatar = null; UI.err = ''; save(); UI.sheet = () => memberSheet(club(), null); toast(`Đã thêm ${name}. Nhập người tiếp theo.`);
         later(() => { const i = $('#m-name'); if (i) i.focus(); }); return;
       }
-      toast(`Đã thêm ${name} · PIN ${v.pin}`);
+      toast(`Đã thêm ${name}.`);
     }
-    UI.sheet = null; UI.editAvatar = null; save(); render();
+    UI.sheet = null; UI.editAvatar = null; save();
   },
   clubInfo(v, f) {
-    const c = club(); const name = (v.name || '').trim(); if (!name) return toast('Tên hội không được trống.');
+    const c = club(); const name = (v.name || '').trim().slice(0, 60); if (!name) return toast('Tên hội không được trống.');
     c.name = name; c.sport = v.sport || c.sport; if (c.sport === 'other') c.sportName = (v.sportName || c.sportName || '').trim();
     c.schedule.venue = (v.venue || '').trim(); c.schedule.time = v.time || ''; c.schedule.days = [...f.querySelectorAll('input[name="days"]:checked')].map(i => Number(i.value));
     c.settings.round = Number(v.round) || 1; save(); toast('Đã lưu thông tin hội.');
@@ -412,15 +539,7 @@ const FORMS = {
     if (v.bin && !/^[0-9A-Za-z]{4,20}$/.test(acct)) return toast('Số tài khoản chưa hợp lệ.');
     c.bank = { bin: v.bin || '', acct, holder: noTone(v.holder || '').toUpperCase().trim() }; save(); toast(bankReady(c.bank) ? 'Đã lưu, VietQR sẵn sàng!' : 'Đã lưu.');
   },
-  async adminAcct(v) {
-    const c = club(); if (!normLogin(v.login)) { UI.err = 'Cần số điện thoại hoặc email đăng nhập.'; return render(); }
-    if (!validPin(v.apin)) { UI.err = 'PIN quản trị gồm đúng 4 chữ số.'; return render(); }
-    if (v.pass && v.pass.length < 6) { UI.err = 'Mật khẩu mới cần ít nhất 6 ký tự.'; return render(); }
-    c.admin.name = (v.name || '').trim(); c.admin.login = v.login.trim(); c.admin.pin = v.apin; if (v.pass) c.admin.pw = await hashPw(v.pass);
-    UI.err = ''; save(); toast('Đã lưu tài khoản quản trị.');
-  },
 };
-ACT.adminPick = el => { const c = STORE.clubs[el.dataset.id]; if (c) enterAdmin(c); };
 
 /* ---------- thay đổi tại chỗ (data-chg) ---------- */
 const CHG = {
@@ -442,7 +561,16 @@ render = function () {
     key = a.id ? '#' + CSS.escape(a.id) : ['data-chg', 'data-i', 'data-f', 'data-mid'].filter(k => a.hasAttribute(k)).map(k => `[${k}="${CSS.escape(a.getAttribute(k))}"]`).join('');
     try { sel = [a.selectionStart, a.selectionEnd]; } catch (e) {}
   }
+  // giữ chữ đang gõ dở khi màn hình vẽ lại (thông báo tắt, dữ liệu mới về…)
+  const dirty = [];
+  $('#app').querySelectorAll('input[id],textarea[id],select[id]').forEach(i => {
+    if (i.type === 'file' || i.hasAttribute('data-chg')) return;
+    if (i.type === 'checkbox' || i.type === 'radio') { if (i.checked !== i.defaultChecked) dirty.push([i.id, 'checked', i.checked]); }
+    else if (i.tagName === 'SELECT') { const d = [...i.options].find(o => o.defaultSelected); if (i.value !== (d ? d.value : (i.options[0] || {}).value)) dirty.push([i.id, 'value', i.value]); }
+    else if (i.value !== i.defaultValue) dirty.push([i.id, 'value', i.value]);
+  });
   _render();
+  dirty.forEach(([id, prop, val]) => { const n = document.getElementById(id); if (n && $('#app').contains(n)) n[prop] = val; });
   if (key) { const b = $('#app').querySelector(key); if (b) { b.focus({ preventScroll: true }); try { if (sel && sel[0] != null) b.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
 };
 
@@ -453,17 +581,13 @@ document.addEventListener('click', e => {
   if (el.tagName === 'LABEL') return;
   const fn = ACT[el.dataset.act]; if (!fn) return;
   e.preventDefault();
-  if (['admin', 'session'].includes(UI.view) && lockIfIdle()) return;
-  Promise.resolve(fn(el, e)).catch(err => { console.error(err); toast('Có lỗi: ' + err.message); });
-  if (!['pinKey'].includes(el.dataset.act) && ACT_RERENDER.has(el.dataset.act)) render();
+  Promise.resolve(fn(el, e)).then(() => render()).catch(err => { console.error(err); toast('Có lỗi: ' + err.message); });
 });
-const ACT_RERENDER = new Set(['rsvp', 'togglePaid', 'payAll', 'toggleActive', 'doDelMember', 'attFromRsvp', 'settle']);
 document.addEventListener('submit', e => {
   const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault();
-  if (['admin', 'session'].includes(UI.view) && lockIfIdle()) return;
   const fd = new FormData(f); const v = {}; for (const [k, val] of fd.entries()) if (!(k in v)) v[k] = typeof val === 'string' ? val : '';
   const fn = FORMS[f.dataset.form]; if (!fn) return;
-  Promise.resolve(fn(v, f, e.submitter)).then(() => { if (UI.view === 'admin' || UI.view === 'session' || UI.view === 'member') render(); }).catch(err => { console.error(err); toast('Có lỗi: ' + err.message); });
+  Promise.resolve(fn(v, f, e.submitter)).then(() => render()).catch(err => { console.error(err); UI.busy = false; toast('Có lỗi: ' + err.message); });
 });
 document.addEventListener('change', e => {
   if (e.target.id === 'importFile' && e.target.files && e.target.files[0]) { readImport(e.target.files[0]); e.target.value = ''; return; }
@@ -475,54 +599,69 @@ document.addEventListener('toggle', e => { if (e.target.matches && e.target.matc
 document.addEventListener('input', e => {
   const el = e.target.closest('[data-chg="search"],[data-chg="regSportName"]'); if (el) CHG[el.dataset.chg](el);
 });
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && UI.sheet) closeSheet();
-  if (UI.view === 'pin' && !UI.sheet) { if (/^\d$/.test(e.key)) ACT.pinKey({ dataset: { k: e.key } }); else if (e.key === 'Backspace') ACT.pinKey({ dataset: { k: 'del' } }); }
-});
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && ['admin', 'session'].includes(UI.view)) lockIfIdle(); else if (DEV.session && DEV.session.role === 'admin') save(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.sheet) closeSheet(); });
 
 /* nút Back của điện thoại */
-const BACK = { adminLogin: 'welcome', forgot: 'adminLogin', register: 'welcome', clubs: 'welcome', profiles: 'welcome', pin: 'profiles', session: 'admin', legal: null };
 window.addEventListener('popstate', () => {
   const v = UI.view;
-  if (UI.sheet) { closeSheet(); }
-  else if (v === 'register' && UI.reg.step > 1) { ACT.regBack(); }
-  else if (v === 'legal') { const b = UI.legalBack && UI.legalBack !== 'legal' ? UI.legalBack : 'welcome'; UI.view = b; render(); }
-  else if (v === 'admin' && UI.atab !== 'home') { UI.atab = 'home'; render(); }
-  else if (v === 'member' && UI.tab !== 'home') { UI.tab = 'home'; render(); }
+  if (UI.sheet) closeSheet();
+  else if (v === 'register' && UI.reg.step > 1) ACT.regBack();
+  else if (v === 'legal') ACT.closeLegal();
+  else if (v === 'club' && canAdmin(club()) && UI.atab !== 'home') { UI.atab = 'home'; render(); }
+  else if (v === 'club' && !canAdmin(club()) && UI.tab !== 'home') { UI.tab = 'home'; render(); }
+  else if (v === 'session') { UI.view = 'club'; render(); }
   else if (v === 'shared' && UI.sharedMid) { UI.sharedMid = null; render(); }
-  else if (BACK[v]) { UI.view = v === 'session' ? 'admin' : BACK[v]; UI.err = ''; UI.pin = ''; render(); }
+  else if (['club', 'account', 'register', 'join'].includes(v) && (ME || DEV.local)) { UI.view = 'home'; render(); }
+  else if (['auth', 'register', 'join'].includes(v)) { UI.view = 'welcome'; render(); }
   else return; // màn gốc: cho trình duyệt quay lại bình thường
   try { history.pushState({ v: UI.view }, ''); } catch (e) {}
 });
 
+/* ---------- điều hướng sau khi biết trạng thái đăng nhập ---------- */
+function route(first) {
+  if (UI.view === 'shared' && UI.shared) return render();
+  if (ME) {
+    if (DEV.pendingJoin) return openJoin(DEV.pendingJoin);
+    if (UI.after === 'register') { UI.after = null; return go('register', { reg: { step: 1, days: [], time: '19:00' } }); }
+    if (UI.after === 'demo') { UI.after = null; return ACT.demo(); }
+    if (UI.after === 'legal') { UI.after = null; UI.legalBack = 'home'; return go('legal'); }
+    if (first || ['loading', 'welcome', 'auth'].includes(UI.view)) return go('home');
+    return render();
+  }
+  if (DEV.pendingJoin && CLOUD) return go('join', { join: { code: DEV.pendingJoin } });
+  if (UI.after === 'demo') { UI.after = null; return ACT.demo(); }
+  if (UI.after === 'legal') { UI.after = null; UI.legalBack = 'welcome'; return go('legal'); }
+  if (UI.after === 'register' && (DEV.local || !CLOUD)) { UI.after = null; return go('register', { reg: { step: 1, days: [], time: '19:00' } }); }
+  if (DEV.local) return go(['club', 'session'].includes(UI.view) ? UI.view : 'home');
+  return go('welcome');
+}
+
 /* ---------- khởi động ---------- */
 async function boot() {
   applyTheme();
-  const m = location.hash.match(/[#&]s=([A-Za-z0-9_-]+)/);
-  if (m) {
-    try { UI.shared = await decodeShare(m[1]); UI.view = 'shared'; }
-    catch (e) { UI.view = 'welcome'; setTimeout(() => toast('Link xem nhanh bị lỗi hoặc không đầy đủ.'), 50); }
-  } else {
-    const c = club(), s = DEV.session;
-    if (c && s && s.cid === c.id && s.role === 'member' && memberOf(c, s.mid)) UI.view = 'member';
-    else if (c && s && s.cid === c.id && s.role === 'admin') {
-      if (Date.now() - (s.at || 0) > ADMIN_IDLE) { DEV.session = null; save(); Object.assign(UI, { view: 'pin', pinFor: '__admin', pinBack: 'profiles', locked: true }); }
-      else { UI.view = 'admin'; s.at = Date.now(); save(); }
-    } else if (s) { DEV.session = null; save(); }
-  }
-  // đường dẫn nhanh từ trang giới thiệu (landing): #register, #demo, #admin, #members, #legal
-  const dl = !m && (location.hash.match(/^#(register|demo|admin|members|legal)$/) || [])[1];
-  if (dl) {
-    const c = club(), live = UI.view === 'member' || UI.view === 'admin';
-    if (dl === 'register') Object.assign(UI, { view: 'register', reg: { step: 1, days: [], time: '19:00' } });
-    else if (dl === 'demo') { const d = await seedDemo(); DEV.clubId = d.id; DEV.session = null; save(); UI.view = 'profiles'; setTimeout(() => toast('Đã mở hội mẫu. Chọn tên hoặc đăng nhập quản trị.'), 50); }
-    else if (dl === 'admin' && UI.view !== 'admin') UI.view = 'adminLogin';
-    else if (dl === 'members' && !live) UI.view = c ? 'profiles' : 'clubs';
-    else if (dl === 'legal') Object.assign(UI, { view: 'legal', legalBack: live ? UI.view : 'welcome' });
-  }
-  try { history.replaceState({ v: 'root' }, '', dl ? location.pathname + location.search : undefined); history.pushState({ v: UI.view }, ''); } catch (e) {}
   render();
+  const hash = location.hash;
+  const sm = hash.match(/[#&]s=([A-Za-z0-9_-]+)/);
+  if (sm) { try { UI.shared = await decodeShare(sm[1]); UI.view = 'shared'; render(); } catch (e) { setTimeout(() => toast('Link xem nhanh bị lỗi hoặc không đầy đủ.'), 50); } }
+  const jm = hash.match(/[#&]join=([A-Za-z0-9]+)/);
+  if (jm) { DEV.pendingJoin = jm[1]; persistLocal(); }
+  const dl = (hash.match(/^#(register|demo|admin|members|legal)$/) || [])[1];
+  if (dl === 'register' || dl === 'demo' || dl === 'legal') UI.after = dl;
+  if (jm || dl) try { history.replaceState(null, '', appBase() + location.search); } catch (e) {}
+  try { history.replaceState({ v: 'root' }, ''); history.pushState({ v: 'app' }, ''); } catch (e) {}
+
+  await cloudReady;
+  if (CLOUD) {
+    let first = true;
+    CLOUD.onAuth(user => {
+      const prev = ME && ME.uid;
+      if (user) { if (prev !== user.uid) startCloud(user); else ME = user; }
+      else if (prev) stopCloud();
+      AUTH_READY = true;
+      if (first || !!user !== !!prev) { const f = first; first = false; route(f); }
+      else render();
+    });
+  } else { AUTH_READY = true; route(true); }
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 boot();

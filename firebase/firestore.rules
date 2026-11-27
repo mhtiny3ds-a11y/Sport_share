@@ -1,0 +1,136 @@
+rules_version = '2';
+
+// Sport Share — quy tắc bảo mật Firestore.
+// Dán toàn bộ file này vào Firebase Console → Firestore Database → Rules → Publish.
+//
+// Mô hình dữ liệu:
+//   invites/{code}                    link mời (cá nhân: gắn với 1 hội viên; chung: mid = null, cần duyệt)
+//   clubs/{c}                         thông tin hội + owner, admins[], memberUids[], uidMid{uid: mid}
+//   clubs/{c}/members/{m}             hội viên (uid = tài khoản đã liên kết, hoặc chưa có)
+//   clubs/{c}/sessions/{s}            buổi chơi, vote (rsvp), điểm danh, chi phí
+//   clubs/{c}/charges/{x}             công nợ từng người
+//   clubs/{c}/fund/{x}                sổ quỹ (chỉ quản trị)
+//   clubs/{c}/requests/{uid}          yêu cầu vào hội qua link mời chung
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function clubData(c) { return get(/databases/$(database)/documents/clubs/$(c)).data; }
+    function isMember(c) { return signedIn() && me() in clubData(c).memberUids; }
+    function isAdmin(c) { return signedIn() && me() in clubData(c).admins; }
+    // Dùng cho thao tác ghi: kiểm tra quyền sau lượt ghi, để lập hội + thêm hội viên trong cùng một lượt
+    function isAdminW(c) { return signedIn() && me() in getAfter(/databases/$(database)/documents/clubs/$(c)).data.admins; }
+    function myMid(c) { return clubData(c).uidMid[me()]; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function inviteOf(code) { return get(/databases/$(database)/documents/invites/$(code)).data; }
+
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow list, update: if false;
+      allow create: if signedIn() && request.resource.data.by == me() && isAdmin(request.resource.data.clubId);
+      allow delete: if signedIn() && isAdmin(resource.data.clubId);
+    }
+
+    match /clubs/{c} {
+      allow read: if signedIn() && me() in resource.data.memberUids;
+      allow create: if signedIn()
+        && request.resource.data.owner == me()
+        && request.resource.data.admins == [me()]
+        && request.resource.data.memberUids == [me()];
+      allow update: if adminUpdate() || claimJoin() || leave();
+      allow delete: if signedIn() && resource.data.owner == me();
+
+      // Quản trị sửa được mọi thứ, trừ việc gỡ người lập hội
+      function adminUpdate() {
+        return signedIn() && me() in resource.data.admins
+          && request.resource.data.owner == resource.data.owner
+          && resource.data.owner in request.resource.data.admins
+          && resource.data.owner in request.resource.data.memberUids;
+      }
+      // Link mời cá nhân: tự gắn tài khoản của mình vào đúng hội viên được mời
+      function claimJoin() {
+        let inv = inviteOf(request.resource.data.joinVia);
+        return signedIn() && !(me() in resource.data.memberUids)
+          && inv.clubId == c && inv.mid is string
+          && changed().hasOnly(['memberUids', 'uidMid', 'joinVia'])
+          && request.resource.data.memberUids.toSet().difference(resource.data.memberUids.toSet()) == [me()].toSet()
+          && request.resource.data.memberUids.size() == resource.data.memberUids.size() + 1
+          && request.resource.data.uidMid.diff(resource.data.uidMid).affectedKeys() == [me()].toSet()
+          && request.resource.data.uidMid[me()] == inv.mid
+          && get(/databases/$(database)/documents/clubs/$(c)/members/$(inv.mid)).data.get('uid', null) == null;
+      }
+      // Tự rời hội (người lập hội không rời được)
+      function leave() {
+        return signedIn() && me() in resource.data.memberUids && me() != resource.data.owner
+          && changed().hasOnly(['memberUids', 'uidMid', 'admins'])
+          && resource.data.memberUids.toSet().difference(request.resource.data.memberUids.toSet()) == [me()].toSet()
+          && request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1
+          && !(me() in request.resource.data.uidMid)
+          && request.resource.data.uidMid.diff(resource.data.uidMid).affectedKeys() == [me()].toSet()
+          && request.resource.data.admins.toSet() == resource.data.admins.toSet().difference([me()].toSet());
+      }
+
+      match /members/{m} {
+        allow read: if isMember(c);
+        allow create, delete: if isAdminW(c);
+        allow update: if isAdminW(c) || claimMember() || ownProfile() || unlinkSelf();
+
+        function claimMember() {
+          let inv = inviteOf(request.resource.data.joinVia);
+          return signedIn() && inv.clubId == c && inv.mid == m
+            && resource.data.get('uid', null) == null
+            && request.resource.data.uid == me()
+            && changed().hasOnly(['uid', 'email', 'joinVia', 'photo'])
+            // phải được gắn vào hội trong cùng lượt ghi (không chiếm chỗ người khác)
+            && getAfter(/databases/$(database)/documents/clubs/$(c)).data.uidMid[me()] == m;
+        }
+        function ownProfile() {
+          return signedIn() && resource.data.get('uid', null) == me()
+            && changed().hasOnly(['name', 'avatar', 'phone']);
+        }
+        function unlinkSelf() {
+          return signedIn() && resource.data.get('uid', null) == me()
+            && request.resource.data.get('uid', null) == null
+            && changed().hasOnly(['uid', 'email', 'photo']);
+        }
+      }
+
+      match /sessions/{s} {
+        allow read: if isMember(c);
+        allow create, delete: if isAdminW(c);
+        allow update: if isAdminW(c) || vote();
+
+        // Hội viên chỉ được vote đi / không đi cho chính mình, khi buổi còn mở
+        function vote() {
+          let mid = myMid(c);
+          return isMember(c) && resource.data.status == 'open'
+            && changed().hasOnly(['rsvp', 'rsvpAt'])
+            && request.resource.data.get('rsvp', {}).diff(resource.data.get('rsvp', {})).affectedKeys().hasOnly([mid])
+            && request.resource.data.get('rsvpAt', {}).diff(resource.data.get('rsvpAt', {})).affectedKeys().hasOnly([mid]);
+        }
+      }
+
+      match /charges/{x} {
+        // Hội viên chỉ thấy và báo "đã chuyển khoản" cho khoản của chính mình
+        allow read: if isAdmin(c) || (isMember(c) && resource.data.mid == myMid(c));
+        allow create, delete: if isAdminW(c);
+        allow update: if isAdminW(c)
+          || (isMember(c) && resource.data.mid == myMid(c) && changed().hasOnly(['reportedAt']));
+      }
+
+      match /fund/{x} {
+        allow read: if isAdmin(c);
+        allow write: if isAdminW(c);
+      }
+
+      match /requests/{u} {
+        allow read: if isAdmin(c) || (signedIn() && u == me());
+        allow create: if signedIn() && u == me() && request.resource.data.uid == me()
+          && inviteOf(request.resource.data.invite).clubId == c;
+        allow delete: if isAdminW(c) || (signedIn() && u == me());
+        allow update: if false;
+      }
+    }
+  }
+}

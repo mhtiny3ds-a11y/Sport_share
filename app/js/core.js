@@ -83,45 +83,17 @@ const relDay = k => { const diff = Math.round((parseDay(k) - parseDay(dayKey()))
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const noTone = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
 const initials = s => noTone(s).split(/\s+/).filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 4);
-const randPin = () => String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-const validPin = p => /^\d{4}$/.test(p);
-const normLogin = s => String(s || '').trim().toLowerCase().replace(/\s+/g, '');
 const avaBg = s => AVA_BG[[...String(s)].reduce((a, ch) => a + ch.codePointAt(0), 0) % AVA_BG.length];
 const ava = (m, cls = '') => `<span class="ava ${cls}" style="--ac:${avaBg(m && (m.avatar + m.id))}" aria-hidden="true">${m ? esc(m.avatar || '🙂') : '🙂'}</span>`;
 const lvStars = n => '★'.repeat(n || 0) + '☆'.repeat(5 - (n || 0));
 
-async function hashPw(pw) {
-  const data = new TextEncoder().encode('sportshare:' + pw);
-  if (window.crypto && crypto.subtle) {
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-  let h = 5381; for (const b of data) h = ((h << 5) + h + b) >>> 0; return 'x' + h.toString(16); // dự phòng khi không có crypto.subtle
-}
-
-/* ===== lưu trữ ===== */
-const LS = { store: 'sportshare.store.v1', dev: 'sportshare.device.v1' };
-const lsGet = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
-const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
-let STORE = lsGet(LS.store, null) || { clubs: {} };
-let DEV = lsGet(LS.dev, null) || { clubId: null, session: null, theme: 'auto' };
-if (!STORE.clubs) STORE.clubs = {};
-function persist() {
-  const ok = lsSet(LS.store, STORE) && lsSet(LS.dev, DEV);
-  if (!ok && typeof toast === 'function') toast('Không lưu được dữ liệu (bộ nhớ trình duyệt đầy hoặc bị chặn).');
-}
-const club = () => STORE.clubs[DEV.clubId] || null;
-const memberOf = (c, id) => c && c.members.find(m => m.id === id);
-const activeMembers = c => c.members.filter(m => m.active !== false);
 
 function normalizeClub(c) {
   c.members ||= []; c.sessions ||= []; c.charges ||= []; c.fund ||= [];
   c.bank ||= { bin: '', acct: '', holder: '' };
-  c.settings ||= {}; c.settings.round ??= 1000; c.schedule ||= { days: [], time: '19:00', venue: '' };
-  c.admin ||= {};
+  c.settings ||= {}; c.settings.round ??= 1000; c.schedule ||= { days: [], time: '19:00', venue: '' }; c.schedule.days ||= [];
   return c;
 }
-Object.values(STORE.clubs).forEach(normalizeClub);
 
 /* ===== tiền & thống kê ===== */
 const unpaidOf = (c, mid) => c.charges.filter(x => x.mid === mid && !x.paid);
@@ -238,10 +210,10 @@ async function seedDemo() {
   const old = Object.values(STORE.clubs).find(c => c.demo); if (old) return old;
   const id = uid('club_');
   const names = [['Minh Quân', '🦅', 4, '1111'], ['Thu Lan', '🦊', 3, '2222'], ['Hoàng Nam', '🐯', 5], ['Bảo Ngọc', '🦄', 2], ['Đức Anh', '⚡', 4], ['Thanh Hà', '🐬', 3], ['Quốc Bảo', '🦁', 3], ['Mai Anh', '🌟', 2], ['Tuấn Kiệt', '🔥', 5], ['Phương Linh', '🍀', 1]];
-  const members = names.map(([name, avatar, level, pin], i) => ({ id: 'm' + i + id.slice(-4), name, avatar, level, pin: pin || randPin(), phone: '', active: true, joinedAt: Date.now() - 864e5 * 90 }));
+  const members = names.map(([name, avatar, level], i) => ({ id: 'm' + i + id.slice(-4), name, avatar, level, phone: '', active: true, joinedAt: Date.now() - 864e5 * 90 + i }));
   const c = normalizeClub({
     id, demo: true, sport: 'badminton', name: 'CLB Cầu Lông Sấm Sét', area: 'Nhà thi đấu Quận 7', createdAt: Date.now(),
-    admin: { name: 'Anh Sơn (Trưởng nhóm)', login: 'demo', pw: await hashPw('123456'), pin: '0000' },
+    owner: 'local', meMid: null,
     bank: { bin: '970436', acct: '0123456789', holder: 'NGUYEN VAN SON' },
     schedule: { days: [2, 4, 6], time: '19:00', venue: 'Nhà thi đấu Quận 7 · Sân 3-4' },
     settings: { round: 1000 }, members, sessions: [], charges: [], fund: [],
@@ -275,6 +247,7 @@ async function seedDemo() {
   c.sessions.push(s1);
   let nx2 = addDays(nx, 1); while (![2, 4, 6].includes(parseDay(nx2).getDay())) nx2 = addDays(nx2, 1);
   c.sessions.push({ id: uid('s_'), date: nx2, time: '19:00', venue: c.schedule.venue, note: '', status: 'open', rsvp: { [members[1].id]: 'yes', [members[3].id]: 'yes' }, attendees: [], guests: [], costs: [{ label: 'Tiền sân', amount: 240000 }, { label: 'Tiền cầu', amount: 150000 }], split: 'equal', payer: members[0].id, teams: null });
-  STORE.clubs[id] = c; persist();
+  c.meMid = members[0].id; // bạn đóng vai Minh Quân để thử vote, công nợ
+  STORE.clubs[id] = c; persistLocal();
   return c;
 }

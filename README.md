@@ -1,96 +1,72 @@
 # ⚡ Sport Share
 
-Web app **miễn phí, không quảng cáo, không cần máy chủ** để quản lý đội nhóm thể thao: lịch tập, điểm danh, chia tiền sân, công nợ, quỹ hội và chuyển khoản nhanh bằng **VietQR**. Dùng được cho nhiều môn: cầu lông, bóng đá, pickleball, tennis, bóng bàn, bóng chuyền, bóng rổ, chạy bộ, đạp xe, bơi lội, gym, golf, cờ… hoặc tự đặt tên môn.
+Web app **miễn phí, không quảng cáo** để quản lý đội nhóm thể thao: vote đi / không đi, điểm danh, chia tiền sân, công nợ, quỹ hội và chuyển khoản nhanh bằng **VietQR**. Dùng cho cầu lông, bóng đá, pickleball, tennis, bóng bàn, bóng chuyền, bóng rổ, chạy bộ, đạp xe, bơi lội, gym, golf, cờ… hoặc môn tự đặt tên.
 
-## Vai trò
+- Trang giới thiệu: <https://sportshare.pro.vn>
+- Web app: <https://sportshare.pro.vn/app/>
+- Hướng dẫn sử dụng: [`huong-dan-su-dung.pdf`](huong-dan-su-dung.pdf) (nguồn trong `docs/guide/`)
 
-| Vai trò | Vào bằng | Làm được gì |
-|---|---|---|
-| 🛡️ **Quản trị viên** | Số điện thoại/email + mật khẩu, hoặc PIN quản trị 4 số | Tạo buổi, điểm danh, nhập chi phí, chia tiền, chia đội, chốt công nợ, thu quỹ, quản lý hội viên, cài đặt |
-| 🏃 **Hội viên** | Chọn tên + mã PIN 4 số | Xem lịch, đăng ký tham gia / báo vắng, xem số tiền phải trả, quét VietQR, bảng xếp hạng chuyên cần |
+## Tài khoản & vai trò
 
-## Địa chỉ
+**Mỗi người một tài khoản** (Google hoặc email/mật khẩu, qua Firebase Authentication). **Vai trò tính theo từng hội**: một người có thể là hội viên của hội này và quản trị của hội khác. Trang **Của tôi** gộp lịch, vote và công nợ của mọi hội.
 
-| Địa chỉ | Nội dung |
+| Vai trò | Làm được gì |
 |---|---|
-| `sportshare.pro.vn/` (hoặc `…github.io/Sport_share/`) | Trang giới thiệu (landing page) |
-| `…/app/` | Web app Sport Share |
-| `…/huong-dan-su-dung.pdf` | Hướng dẫn sử dụng |
+| 🛡️ **Người lập hội / đồng quản trị** | Mời hội viên (link chung cần duyệt, hoặc link riêng vào ngay), tạo buổi, ghi vote hộ, điểm danh, nhập chi phí, chia tiền, chia đội, chốt công nợ, xác nhận tiền, quỹ tháng, sổ quỹ, phong / bỏ quản trị |
+| 🏃 **Hội viên** | Xem lịch, vote đi / không đi, thêm vào lịch điện thoại, xem công nợ của mình, quét VietQR, bấm "Tôi đã chuyển khoản", xếp hạng, đổi tên / ảnh trong hội, rời hội |
 
-Các nút trên landing dẫn vào app và mở đúng màn hình:
+Chưa muốn đăng ký: **Xem hội mẫu** hoặc **Dùng trên máy này** (dữ liệu chỉ trong trình duyệt, sau này bấm **☁️ Lên mây** để đưa lên tài khoản, giữ nguyên lịch sử).
 
-| Đường dẫn | Mở màn hình |
-|---|---|
-| `…/app/` | Màn hình đầu |
-| `…/app/#register` | Lập hội mới (bước chọn môn thể thao) |
-| `…/app/#demo` | Tạo và mở hội mẫu |
-| `…/app/#admin` | Quản trị viên đăng nhập |
-| `…/app/#members` | Hội viên chọn tên |
-| `…/app/#legal` | Chính sách & Điều khoản |
+## Tính năng chính
+- **Lập hội: chọn môn thể thao trước**, môn quyết định khoản chi gợi ý, cách chia đội (cặp / đội / nhóm), tên gọi buổi.
+- **Vote đi / không đi** theo thời gian thực, giới hạn số chỗ và tự xếp **dự bị**, chép lời mời / kết quả vote cho nhóm Zalo.
+- **Điểm danh theo vote**, khách vãng lai, chi phí gõ tắt (`240k`, `1.2tr`), người ứng tiền trước, chia đều có làm tròn hoặc tự nhập.
+- **Chia đội cân bằng** theo trình độ 1–5 sao.
+- **Công nợ**: hội viên quét VietQR rồi báo đã chuyển khoản, quản trị xác nhận một chạm; chép tin nhắc nợ.
+- **Quỹ tháng, khoản thu khác, sổ quỹ hội**.
+- **Thêm vào lịch điện thoại** (Google Calendar / file .ics).
+- **Link xem nhanh** (không cần tài khoản), sao lưu ra file, PWA cài lên màn hình chính, giao diện sáng / tối.
+- **Mời cafe ☕** ủng hộ Team Sport Share.
 
-Link cũ tạo trước khi app chuyển vào `/app/` (link xem nhanh `…/#s=…` và các đường dẫn trên khi không có `app/`) được landing tự chuyển sang app.
+## Cài đặt Firebase (bắt buộc để bật đăng nhập)
+Làm theo [`firebase/HUONG-DAN-FIREBASE.md`](firebase/HUONG-DAN-FIREBASE.md): tạo dự án (gói miễn phí), bật Google + Email/Password, thêm tên miền được phép, tạo Firestore (asia-southeast1), dán [`firebase/firestore.rules`](firebase/firestore.rules), rồi dán cấu hình vào `app/js/firebase-config.js`. Khi `FIREBASE_CONFIG = null`, app chạy chế độ "trên máy này".
 
-## Hướng dẫn sử dụng
-
-File [`huong-dan-su-dung.pdf`](huong-dan-su-dung.pdf) (12 trang, có ảnh minh họa) mở được từ nút **📘 Hướng dẫn sử dụng** ở màn hình đầu của app và nút **Hướng dẫn** trên landing. Nguồn để chỉnh sửa nằm trong `docs/guide/`.
-
-## Tính năng
-
-- **Lập hội: chọn môn thể thao trước**, rồi đặt tên hội, sân quen thuộc, lịch chơi cố định, cuối cùng tạo tài khoản quản trị. Môn thể thao quyết định khoản chi gợi ý (tiền sân, tiền cầu, trọng tài…), cách chia đội (ghép cặp / chia đội / chia nhóm), màu và biểu tượng của hội.
-- **Buổi chơi**: tạo theo lịch cố định, hội viên đăng ký, quản trị điểm danh (hoặc *Lấy theo đăng ký*), thêm khách vãng lai, nhập chi phí (gõ tắt `240k`, `1.2tr`), chọn người ứng tiền trước.
-- **Chia tiền**: chia đều (làm tròn lên 1.000/5.000/10.000đ) hoặc tự nhập từng người. Chốt buổi sẽ tạo công nợ, người ứng tiền được tự gạch phần của mình.
-- **Chia đội ngẫu nhiên cân bằng theo trình độ** (1–5 sao), hoặc ghép cặp đôi với các môn đánh đôi.
-- **Thu chi**: công nợ từng người, gạch nợ, chép tin nhắc nợ, thu quỹ tháng, khoản thu khác, sổ quỹ hội (thu/chi), lịch sử thu.
-- **VietQR**: nhập tài khoản ngân hàng của hội, mỗi hội viên có mã QR đúng số tiền và nội dung. Mã được tạo ngay trên máy theo chuẩn Napas, không gọi dịch vụ ngoài. Có nút tải ảnh QR.
-- **Link xem nhanh** cho hội viên: quản trị bấm *Tạo & chép link*, gửi vào nhóm Zalo/Messenger. Hội viên mở trên điện thoại của mình để xem lịch, bảng xếp hạng, số tiền cần trả và quét QR. Dữ liệu được nén ngay trong link (không chứa PIN, mật khẩu).
-- **Chép thông báo buổi** để dán vào nhóm chat.
-- **Mời cafe ☕** ủng hộ Team Sport Share (Sữa đá, Latte, Cà phê Muối, Tùy tâm) ở màn đăng nhập quản trị, Tổng quan và Cài đặt.
-- PWA: thêm vào màn hình chính, mở được khi mất mạng. Giao diện sáng/tối.
-
-## Đưa lên GitHub Pages
-
-1. Vào **Settings → Pages** của repository.
-2. Ở **Source** chọn **Deploy from a branch**, chọn nhánh chứa code (ví dụ `main`), thư mục `/ (root)`, bấm **Save**.
-3. Sau khoảng 1 phút, landing chạy tại `https://<tên-tài-khoản>.github.io/<tên-repo>/`, app tại `…/app/`.
-
-**Tên miền riêng (`sportshare.pro.vn`)**: ở nhà cung cấp tên miền thêm 4 bản ghi A cho `@` trỏ tới `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` và bản ghi CNAME `www` → `<tên-tài-khoản>.github.io`; rồi nhập tên miền ở **Settings → Pages → Custom domain** và bật **Enforce HTTPS**.
-
-Chạy thử trên máy: `python3 -m http.server 8000` rồi mở `http://localhost:8000` (landing) và `http://localhost:8000/app/` (app).
-
-## Hội mẫu
-
-Bấm **Mở hội mẫu** ở màn hình đầu (tự ẩn khi máy đã có hội thật):
-
-- Quản trị: `demo` / `123456`, PIN quản trị `0000`
-- Minh Quân: PIN `1111` · Thu Lan: PIN `2222`
-
-## Dữ liệu được lưu ở đâu
-
-- Toàn bộ dữ liệu nằm trong **trình duyệt của từng máy** (localStorage). Không có máy chủ nào nhận dữ liệu.
-- Muốn chuyển máy: **Cài đặt → Tải file sao lưu**, rồi trên máy mới bấm **Khôi phục từ file**.
-- Xóa dữ liệu trang web trong trình duyệt sẽ mất dữ liệu, nên tải file sao lưu định kỳ.
-- Mật khẩu được băm SHA-256. Khu quản trị tự khóa sau 10 phút không thao tác.
+## Bảo mật dữ liệu
+Quy tắc Firestore ([`firebase/firestore.rules`](firebase/firestore.rules)) được kiểm thử bằng 59 bài trên Firestore Emulator ([`firebase/rules.test.mjs`](firebase/rules.test.mjs)):
+- Chỉ thành viên đọc được hội; hội viên chỉ thấy **công nợ của chính mình**; sổ quỹ chỉ quản trị xem.
+- Hội viên chỉ vote cho mình, chỉ sửa tên / ảnh / số điện thoại của mình, chỉ báo "đã chuyển khoản", không tự gạch nợ, không tự phong quản trị.
+- Link mời riêng dùng một lần, gắn đúng một hội viên; link chung chỉ tạo yêu cầu chờ duyệt.
+- Không ai gỡ được người lập hội; chỉ người lập hội xóa được hội.
 
 ## Cấu trúc
+```
+index.html, img/, fonts/      trang giới thiệu (landing)
+robots.txt, sitemap.xml       SEO
+huong-dan-su-dung.pdf         hướng dẫn sử dụng (nguồn: docs/guide/)
+app/index.html                web app
+app/js/firebase-config.js     cấu hình Firebase (null = chế độ trên máy)
+app/js/cloud.js               đăng nhập + Firestore (ES module)
+app/js/store.js               lưu trữ & đồng bộ: so sánh thay đổi, chỉ ghi trường đã sửa
+app/js/core.js                môn thể thao, tính tiền, vote, VietQR, hội mẫu
+app/js/views.js               giao diện
+app/js/app.js                 hành động, đăng nhập, link mời, khởi động
+app/vendor/firebase.js        Firebase JS SDK đóng gói sẵn (Apache-2.0)
+app/js/qrcode.js              qrcode-generator (MIT)
+firebase/                     quy tắc bảo mật, bài kiểm thử, hướng dẫn cài Firebase
+```
 
+## Phát triển & kiểm thử
+```bash
+npm i -D firebase firebase-tools @firebase/rules-unit-testing
+npx firebase emulators:exec --only firestore --project demo-sportshare "node firebase/rules.test.mjs"
+npx firebase emulators:start --only firestore,auth --project demo-sportshare
+python3 -m http.server 8000
 ```
-index.html                 trang giới thiệu (landing page)
-img/, fonts/, icon.svg…    ảnh chụp app, font và icon của landing
-sw.js                      dọn service worker cũ (khi app còn nằm ở gốc)
-huong-dan-su-dung.pdf      hướng dẫn sử dụng; nguồn trong docs/guide/
-app/index.html             web app
-app/css/app.css            giao diện app (phong cách thể thao, sáng/tối)
-app/js/core.js             dữ liệu, môn thể thao, tính tiền, VietQR, hội mẫu
-app/js/views.js            các màn hình
-app/js/app.js              hành động, biểu mẫu, link chia sẻ, sao lưu, khởi động
-app/js/qrcode.js           thư viện tạo mã QR (MIT, Kazuhiko Arase)
-app/fonts/                 Be Vietnam Pro (SIL OFL 1.1, xem OFL-fonts.txt)
-app/sw.js, app/manifest.webmanifest, app/icon*.png   PWA
-```
+Mở `http://localhost:8000/app/?emu=1` để chạy app với bộ giả lập (chỉ hoạt động trên localhost).
 
 Thông tin nhận ủng hộ nằm ở hằng `DONATE` trong `app/js/core.js`.
 
 ## Giấy phép bên thứ ba
-
 - Font Be Vietnam Pro: SIL Open Font License 1.1 (`OFL-fonts.txt`).
-- qrcode-generator © Kazuhiko Arase, MIT. “QR Code” là nhãn hiệu của DENSO WAVE. VietQR là nhãn hiệu của Napas.
+- Firebase JS SDK © Google, Apache License 2.0. qrcode-generator © Kazuhiko Arase, MIT.
+- "QR Code" là nhãn hiệu của DENSO WAVE. VietQR là nhãn hiệu của Napas.

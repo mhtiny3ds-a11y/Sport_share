@@ -290,3 +290,8 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
   body{background:radial-gradient(1200px 600px at 50% -10%,color-mix(in srgb,var(--sport) 10%,var(--bg)),var(--bg))}
 }
 @media print{.tabbar,.apphead .hbtn,.btn{display:none!important}}
+
+/* nút Google */
+.btn.gbtn{background:#fff;color:#1F1F1F;border:1.5px solid #DADCE0;box-shadow:0 3px 0 #DADCE0;gap:12px}
+:root[data-theme="dark"] .btn.gbtn{background:#fff;color:#1F1F1F}
+.note[data-act]{width:100%;cursor:pointer}
