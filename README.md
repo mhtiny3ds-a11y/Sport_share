@@ -15,7 +15,7 @@ Web app **miễn phí, không quảng cáo** để quản lý đội nhóm thể
 | 🛡️ **Người lập hội / đồng quản trị** | Mời hội viên (link chung cần duyệt, hoặc link riêng vào ngay), tạo buổi, ghi vote hộ, điểm danh, nhập chi phí, chia tiền, chia đội, chốt công nợ, xác nhận tiền, quỹ tháng, sổ quỹ, phong / bỏ quản trị |
 | 🏃 **Hội viên** | Xem lịch, vote đi / không đi, thêm vào lịch điện thoại, xem công nợ của mình, quét VietQR, bấm "Tôi đã chuyển khoản", xếp hạng, đổi tên / ảnh trong hội, rời hội |
 
-Chưa muốn đăng ký: **Xem hội mẫu** hoặc **Dùng trên máy này** (dữ liệu chỉ trong trình duyệt, sau này bấm **☁️ Lên mây** để đưa lên tài khoản, giữ nguyên lịch sử).
+Chưa muốn đăng ký: **Chơi thử hội mẫu** (dữ liệu mẫu, không lưu). Lập hội thật cần đăng nhập. Hội tạo ở bản cũ (lưu trong trình duyệt) được nhắc đưa lên đám mây sau khi đăng nhập, giữ nguyên lịch sử.
 
 ## Tính năng chính
 - **Lập hội: chọn môn thể thao trước**, môn quyết định khoản chi gợi ý, cách chia đội (cặp / đội / nhóm), tên gọi buổi.
@@ -25,11 +25,12 @@ Chưa muốn đăng ký: **Xem hội mẫu** hoặc **Dùng trên máy này** (d
 - **Công nợ**: hội viên quét VietQR rồi báo đã chuyển khoản, quản trị xác nhận một chạm; chép tin nhắc nợ.
 - **Quỹ tháng, khoản thu khác, sổ quỹ hội**.
 - **Thêm vào lịch điện thoại** (Google Calendar / file .ics).
-- **Link xem nhanh** (không cần tài khoản), sao lưu ra file, PWA cài lên màn hình chính, giao diện sáng / tối.
+- **Sao lưu**: quản trị được nhắc tải file sao lưu mỗi 30 ngày (phòng xóa nhầm); khôi phục file đưa thẳng lên đám mây. Xóa hội phải gõ đúng tên.
+- **Link xem nhanh** (không cần tài khoản), PWA cài lên màn hình chính, giao diện sáng / tối.
 - **Mời cafe ☕** ủng hộ Team Sport Share.
 
 ## Cài đặt Firebase (bắt buộc để bật đăng nhập)
-Làm theo [`firebase/HUONG-DAN-FIREBASE.md`](firebase/HUONG-DAN-FIREBASE.md): tạo dự án (gói miễn phí), bật Google + Email/Password, thêm tên miền được phép, tạo Firestore (asia-southeast1), dán [`firebase/firestore.rules`](firebase/firestore.rules), rồi dán cấu hình vào `app/js/firebase-config.js`. Khi `FIREBASE_CONFIG = null`, app chạy chế độ "trên máy này".
+Làm theo [`firebase/HUONG-DAN-FIREBASE.md`](firebase/HUONG-DAN-FIREBASE.md): tạo dự án (gói miễn phí), bật Google + Email/Password, thêm tên miền được phép, tạo Firestore (asia-southeast1), dán [`firebase/firestore.rules`](firebase/firestore.rules), rồi dán cấu hình vào `app/js/firebase-config.js`. Dự án đang dùng: `sport-share-26070`.
 
 ## Bảo mật dữ liệu
 Quy tắc Firestore ([`firebase/firestore.rules`](firebase/firestore.rules)) được kiểm thử bằng 59 bài trên Firestore Emulator ([`firebase/rules.test.mjs`](firebase/rules.test.mjs)):
@@ -44,7 +45,7 @@ index.html, img/, fonts/      trang giới thiệu (landing)
 robots.txt, sitemap.xml       SEO
 huong-dan-su-dung.pdf         hướng dẫn sử dụng (nguồn: docs/guide/)
 app/index.html                web app
-app/js/firebase-config.js     cấu hình Firebase (null = chế độ trên máy)
+app/js/firebase-config.js     cấu hình Firebase
 app/js/cloud.js               đăng nhập + Firestore (ES module)
 app/js/store.js               lưu trữ & đồng bộ: so sánh thay đổi, chỉ ghi trường đã sửa
 app/js/core.js                môn thể thao, tính tiền, vote, VietQR, hội mẫu

@@ -2,7 +2,7 @@
 
 Làm một lần, khoảng 15 phút. Gói **Spark (miễn phí)** là đủ, **không cần thẻ thanh toán**, nên không thể phát sinh phí.
 
-Chưa làm các bước này thì app vẫn chạy ở chế độ **"Dùng trên máy này"**: không có đăng nhập, hội viên chưa dùng chung được.
+Chưa làm các bước này thì app chỉ có **"Chơi thử hội mẫu"**: không đăng nhập được, không lập được hội thật.
 
 ---
 

@@ -21,7 +21,7 @@ function openClub(id, tab) {
   const extra = canAdmin(c) ? { atab: tab || 'home' } : { tab: tab && ['home', 'debt', 'rank', 'info'].includes(tab) ? tab : 'home' };
   go('club', extra);
 }
-const goHomeOrWelcome = () => go(ME || DEV.local ? 'home' : 'welcome');
+const goHomeOrWelcome = () => go(ME ? 'home' : 'welcome');
 function waitClub(id, then, ms = 15000) { // chờ hội mới xuất hiện từ Firestore rồi mở
   const t0 = Date.now();
   const tick = () => { if (CL[id]) return then(); if (Date.now() - t0 > ms) { toast('Đã lưu. Hội sẽ hiện khi có mạng ổn định.'); return go('home'); } setTimeout(tick, 300); };
@@ -165,7 +165,8 @@ function exportData() {
   if (!clubs.length) return toast('Chưa có hội nào để sao lưu.');
   const blob = new Blob([JSON.stringify({ app: 'sportshare', v: 2, at: Date.now(), clubs: clubs.map(plainClub) }, null, 1)], { type: 'application/json' });
   downloadBlob(blob, `SportShare-${noTone(c ? c.name : 'tren-may').replace(/[^A-Za-z0-9]+/g, '-')}-${dayKey()}.json`);
-  toast('Đã tải file sao lưu. Hãy cất giữ cẩn thận!');
+  clubs.forEach(x => { if (canAdmin(x) && !x.demo) { x.backupAt = Date.now(); delete DEV.snooze[x.id]; } }); save();
+  toast('Đã tải file sao lưu. Cất vào Google Drive / Zalo Cloud cho an toàn nhé!');
 }
 async function readImport(file) {
   try {
@@ -199,7 +200,7 @@ const ACT = {
   copy: el => copyText(el.dataset.t),
   theme: el => { DEV.theme = el.dataset.k; persistLocal(); applyTheme(); render(); },
   openLegal: () => { UI.legalBack = UI.view; go('legal'); },
-  closeLegal: () => go(UI.legalBack && !['legal', 'loading'].includes(UI.legalBack) ? UI.legalBack : (ME || DEV.local ? 'home' : 'welcome')),
+  closeLegal: () => go(UI.legalBack && !['legal', 'loading'].includes(UI.legalBack) ? UI.legalBack : (ME ? 'home' : 'welcome')),
   donatePick: el => { UI.donateIdx = Number(el.dataset.i); render(); },
   downloadDonate: () => { const o = DONATE_OPTS[UI.donateIdx ?? 1]; saveQRImage({ title: 'SPORT SHARE ☕', sub: 'Cảm ơn bạn đã mời Team Sport Share ly cafe', payload: vietQR({ bin: DONATE.bin, acct: DONATE.acct, amount: o.amount, note: DONATE.note }), lines: [['Người nhận', DONATE.name + ' · ' + DONATE.bank], ['Số tài khoản', DONATE.acct], ['Ly cafe', o.amount ? o.label : 'Tùy tâm', true], ['Nội dung', DONATE.note]], file: `SportShare-cafe-${o.slug}.png` }); },
 
@@ -213,9 +214,9 @@ const ACT = {
     UI.busy = false; render();
   },
   signOut: async () => { DEV.clubId = null; DEV.joins = []; persistLocal(); if (CLOUD) await CLOUD.signOut(); toast('Đã đăng xuất.'); },
-  useLocal: () => { DEV.local = true; persistLocal(); if (UI.after === 'register') { UI.after = null; return go('register', { reg: { step: 1, days: [], time: '19:00' } }); } go('home'); },
-  exitLocal: () => { DEV.local = false; DEV.clubId = null; persistLocal(); go('welcome'); },
-  demo: async () => { const c = await seedDemo(); if (!ME) DEV.local = true; persistLocal(); toast('Đã mở hội mẫu. Bạn là quản trị, đóng vai Minh Quân.'); openClub(c.id); },
+  demo: async () => { const c = await seedDemo(); toast('Đang chơi thử hội mẫu: bạn là quản trị, đóng vai Minh Quân. Dữ liệu không được lưu.'); openClub(c.id); },
+  exitDemo: () => { DEMO = null; DEV.clubId = null; persistLocal(); goHomeOrWelcome(); },
+  snoozeBackup: el => { DEV.snooze[el.dataset.cid || DEV.clubId] = Date.now() + 3 * 864e5; persistLocal(); toast('Sẽ nhắc lại sau 3 ngày.'); },
 
   /* trang của tôi */
   openClub: el => openClub(el.dataset.cid, el.dataset.t),
@@ -237,7 +238,7 @@ const ACT = {
   uploadSheet: el => { const c = STORE.clubs[el.dataset.cid]; if (c) sheet(() => uploadSheet(c)); },
 
   /* lập hội */
-  startReg: () => go('register', { reg: { step: 1, days: [], time: '19:00' } }),
+  startReg: () => { if (!ME) { UI.after = 'register'; toast('Đăng nhập (Google một chạm) để lập hội nhé.'); return go('welcome'); } go('register', { reg: { step: 1, days: [], time: '19:00' } }); },
   regSport: el => { UI.reg.sport = el.dataset.k; UI.err = ''; render(); },
   regNext: () => {
     const r = UI.reg; if (!r.sport) return;
@@ -338,7 +339,7 @@ const ACT = {
   debtSheet: el => { const id = el.dataset.mid; sheet(() => debtSheet(club(), memberOf(club(), id))); },
   togglePaid: el => { const c = club(); const x = c.charges.find(y => y.id === el.dataset.cid); if (!x) return; x.paid = !x.paid; x.paidAt = x.paid ? Date.now() : null; save(); toast(x.paid ? `Đã gạch ${vnd(x.amount)}.` : 'Đã hoàn tác.'); },
   payAll: el => { const c = club(); const un = unpaidOf(c, el.dataset.mid); const sum = un.reduce((a, x) => a + x.amount, 0); un.forEach(x => { x.paid = true; x.paidAt = Date.now(); }); save(); toast(`Đã thu đủ ${vnd(sum)}.`); },
-  delCharge: el => { const c = club(); c.charges = c.charges.filter(x => x.id !== el.dataset.cid); save(); render(); },
+  delCharge: el => { const c = club(), x = c.charges.find(y => y.id === el.dataset.cid); if (!x || !confirm(`Xóa khoản “${x.label}” ${vnd(x.amount)}? Không hoàn tác được.`)) return; c.charges = c.charges.filter(y => y.id !== x.id); save(); toast('Đã xóa khoản.'); },
   copyReminder: el => { const c = club(); copyText(reminderText(c, memberOf(c, el.dataset.mid)), 'Đã chép tin nhắc nợ.'); },
   copyAllReminders: () => {
     const c = club(); const rows = c.members.map(m => [m, debtOf(c, m.id)]).filter(([, d]) => d > 0).sort((a, b) => b[1] - a[1]);
@@ -348,7 +349,7 @@ const ACT = {
   chargeSheet: el => { const k = el.dataset.k; sheet(() => chargeSheet(club(), k)); },
   chkAll: el => { const f = el.closest('form'); f.querySelectorAll('input[name="m"]').forEach(i => { i.checked = el.dataset.v === '1'; i.closest('.check').classList.toggle('on', i.checked); }); },
   fundSheet: el => { const k = el.dataset.k; sheet(() => fundSheet(k)); },
-  delFund: el => { const c = club(); c.fund = c.fund.filter(x => x.id !== el.dataset.id); save(); render(); },
+  delFund: el => { const c = club(), x = c.fund.find(y => y.id === el.dataset.id); if (!x || !confirm(`Xóa dòng sổ quỹ “${x.label}” ${vnd(x.amount)}? Không hoàn tác được.`)) return; c.fund = c.fund.filter(y => y.id !== x.id); save(); toast('Đã xóa.'); },
 
   /* hội viên (quản trị) */
   memberSheet: el => { const id = el.dataset.mid; UI.editAvatar = null; UI.confirm = null; sheet(() => memberSheet(club(), id ? memberOf(club(), id) : null)); },
@@ -394,16 +395,26 @@ const ACT = {
   sharedPick: el => { UI.sharedMid = el.dataset.mid || null; render(); window.scrollTo(0, 0); },
   leaveShared: () => { UI.shared = null; try { history.replaceState(null, '', appBase()); } catch (e) {} route(true); },
   exportData,
-  doImport: () => {
-    const d = UI.importData; if (!d) return;
-    d.clubs.forEach(c => { const x = normalizeClub(JSON.parse(JSON.stringify(c))); ['owner', 'admins', 'memberUids', 'uidMid', 'joinVia', 'groupInvite'].forEach(k => delete x[k]); x.owner = 'local'; x.members.forEach(m => { delete m.uid; delete m.invite; delete m.pin; }); STORE.clubs[x.id] = x; });
-    if (!ME) DEV.local = true;
-    UI.confirm = null; UI.importData = null; persistLocal();
-    toast(`Đã khôi phục ${d.clubs.length} hội vào máy này.`); go('home');
+  doImport: async () => { // khôi phục file sao lưu → đưa thẳng lên đám mây thành hội mới của bạn
+    const d = UI.importData; if (!d || !ME) return;
+    UI.confirm = null; UI.importData = null; UI.busy = true; toast('Đang khôi phục lên đám mây…');
+    let n = 0, last = null;
+    for (const c of d.clubs) {
+      const x = normalizeClub(JSON.parse(JSON.stringify(c)));
+      ['owner', 'admins', 'memberUids', 'uidMid', 'joinVia', 'groupInvite', 'backupAt'].forEach(k => delete x[k]);
+      x.members.forEach(m => { delete m.uid; delete m.invite; delete m.pin; delete m.email; delete m.joinVia; });
+      const id = await uploadLocalClub(x, null); if (id) { n++; last = id; }
+    }
+    UI.busy = false;
+    if (!n) return toast('Chưa khôi phục được. Kiểm tra mạng rồi thử lại.');
+    toast(`Đã khôi phục ${n} hội lên đám mây. Gửi link mời cho hội viên nhé!`); waitClub(last, () => openClub(last, 'members'));
   },
   askDelClub: () => { UI.confirm = 'delClub'; render(); },
   doDelClub: async () => {
-    const c = club(); UI.confirm = null; if (!c) return;
+    const c = club(); if (!c) return;
+    const typed = (document.getElementById('del-name') || {}).value || '';
+    if (noTone(typed).trim().toLowerCase() !== noTone(c.name).trim().toLowerCase()) { toast('Gõ đúng tên hội để xác nhận xóa.'); return; }
+    UI.confirm = null;
     if (isCloud(c)) { if (!(await deleteCloudClub(c))) return render(); }
     else { delete STORE.clubs[c.id]; }
     DEV.clubId = null; persistLocal(); toast('Đã xóa hội.'); go('home');
@@ -459,17 +470,12 @@ const FORMS = {
     r.days = [...f.querySelectorAll('input[name="days"]:checked')].map(i => Number(i.value));
     if (!r.name) { UI.err = 'Đặt tên cho hội nhé.'; return render(); }
     const fields = { sport: r.sport, sportName: r.sport === 'other' ? (r.sportName || '').trim() : '', name: r.name, schedule: { days: r.days, time: r.time || '19:00', venue: r.venue || '' }, settings: { round: 1000 }, bank: { bin: '', acct: '', holder: '' } };
-    if (ME && CLOUD) {
-      UI.busy = true; render();
-      const id = await createCloudClub(fields, !!v.withMe);
-      UI.busy = false; if (!id) { UI.err = 'Chưa lập được hội. Kiểm tra mạng rồi thử lại.'; return render(); }
-      toast(`Đã lập hội ${r.name}! 🎉`);
-      waitClub(id, () => openClub(id));
-      return;
-    }
-    const c = normalizeClub({ id: uid('club_'), owner: 'local', createdAt: Date.now(), ...fields });
-    STORE.clubs[c.id] = c; DEV.local = true; persistLocal();
-    toast(`Đã lập hội ${c.name}! 🎉`); openClub(c.id);
+    if (!ME || !CLOUD) { UI.after = 'register'; return go('welcome'); }
+    UI.busy = true; render();
+    const id = await createCloudClub(fields, !!v.withMe);
+    UI.busy = false; if (!id) { UI.err = 'Chưa lập được hội. Kiểm tra mạng rồi thử lại.'; return render(); }
+    toast(`Đã lập hội ${r.name}! 🎉`);
+    waitClub(id, () => openClub(id));
   },
   session(v) {
     const c = club(); if (!v.date) { UI.err = 'Chọn ngày.'; return render(); }
@@ -611,7 +617,8 @@ window.addEventListener('popstate', () => {
   else if (v === 'club' && !canAdmin(club()) && UI.tab !== 'home') { UI.tab = 'home'; render(); }
   else if (v === 'session') { UI.view = 'club'; render(); }
   else if (v === 'shared' && UI.sharedMid) { UI.sharedMid = null; render(); }
-  else if (['club', 'account', 'register', 'join'].includes(v) && (ME || DEV.local)) { UI.view = 'home'; render(); }
+  else if (v === 'club' && club() && club().demo) { ACT.exitDemo(); return; }
+  else if (['club', 'account', 'register', 'join'].includes(v) && ME) { UI.view = 'home'; render(); }
   else if (['auth', 'register', 'join'].includes(v)) { UI.view = 'welcome'; render(); }
   else return; // màn gốc: cho trình duyệt quay lại bình thường
   try { history.pushState({ v: UI.view }, ''); } catch (e) {}
@@ -631,8 +638,7 @@ function route(first) {
   if (DEV.pendingJoin && CLOUD) return go('join', { join: { code: DEV.pendingJoin } });
   if (UI.after === 'demo') { UI.after = null; return ACT.demo(); }
   if (UI.after === 'legal') { UI.after = null; UI.legalBack = 'welcome'; return go('legal'); }
-  if (UI.after === 'register' && (DEV.local || !CLOUD)) { UI.after = null; return go('register', { reg: { step: 1, days: [], time: '19:00' } }); }
-  if (DEV.local) return go(['club', 'session'].includes(UI.view) ? UI.view : 'home');
+  if (club() && club().demo && ['club', 'session'].includes(UI.view)) return render(); // đang chơi thử
   return go('welcome');
 }
 

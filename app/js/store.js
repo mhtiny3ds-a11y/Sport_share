@@ -13,8 +13,10 @@ let DEV = lsGet(LS.dev, null) || {};
 if (!STORE.clubs) STORE.clubs = {};
 DEV.theme ||= 'auto'; DEV.joins ||= [];
 delete DEV.session; // phiên PIN cũ không còn dùng
-// người dùng bản cũ (chưa có tài khoản) đã có hội trên máy: mở thẳng các hội đó
-if (DEV.local === undefined && Object.values(STORE.clubs).some(c => !c.demo)) DEV.local = true;
+delete DEV.local;   // chế độ "trên máy này" đã bỏ: hội mới luôn lưu trên đám mây
+DEV.snooze ||= {};
+// hội mẫu cũ từng lưu trong máy: bỏ (hội mẫu giờ chỉ nằm trong bộ nhớ, không lưu)
+Object.keys(STORE.clubs).forEach(id => { if (STORE.clubs[id].demo) delete STORE.clubs[id]; });
 Object.values(STORE.clubs).forEach(c => { normalizeClub(c); c.owner ||= 'local'; });
 function persistLocal() {
   const ok = lsSet(LS.store, STORE) && lsSet(LS.dev, DEV);
@@ -39,11 +41,12 @@ const cloudReady = new Promise(res => {
 
 /* ===== truy cập hội & vai trò ===== */
 const isCloud = c => !!(c && c._cloud);
-const club = () => CL[DEV.clubId] || STORE.clubs[DEV.clubId] || null;
-const clubById = id => CL[id] || STORE.clubs[id] || null;
+let DEMO = null;            // hội mẫu để chơi thử: chỉ trong bộ nhớ, tải lại trang là mất
+const clubById = id => CL[id] || (DEMO && DEMO.id === id ? DEMO : null) || STORE.clubs[id] || null;
+const club = () => clubById(DEV.clubId);
 const cloudClubs = () => Object.values(CL).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'vi'));
 const localClubs = () => Object.values(STORE.clubs).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-const myClubs = () => [...cloudClubs(), ...(ME || DEV.local ? localClubs() : [])];
+const myClubs = () => ME ? [...cloudClubs(), ...localClubs()] : []; // hội trên máy = hội cũ chờ đưa lên mây
 const memberOf = (c, id) => c && c.members.find(m => m.id === id);
 const activeMembers = c => c.members.filter(m => m.active !== false);
 function role(c) {
@@ -58,6 +61,15 @@ function role(c) {
 const canAdmin = c => ['owner', 'admin'].includes(role(c));
 const myMid = c => !c ? null : isCloud(c) ? ((c.uidMid || {})[ME && ME.uid] || null) : (c.meMid || null);
 const myMember = c => memberOf(c, myMid(c));
+/* nhắc quản trị tải file sao lưu mỗi 30 ngày (phòng xóa nhầm) */
+const BACKUP_DAYS = 30;
+function lastBackup(c) { return c.backupAt || c.uploadedAt || c.createdAt || 0; }
+function needBackup(c) {
+  if (!c || c.demo || !isCloud(c) || !canAdmin(c)) return false;
+  if (!c.sessions.length && !c.charges.length) return false;
+  if ((DEV.snooze[c.id] || 0) > Date.now()) return false;
+  return Date.now() - lastBackup(c) > BACKUP_DAYS * 864e5;
+}
 const roleLabel = r => ({ owner: 'Người lập hội', admin: 'Quản trị', member: 'Hội viên' }[r] || '');
 
 /* ===== lưu ===== */

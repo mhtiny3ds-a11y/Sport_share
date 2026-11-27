@@ -207,7 +207,7 @@ const bankReady = b => !!(b && b.bin && b.acct);
 
 /* ===== hội mẫu ===== */
 async function seedDemo() {
-  const old = Object.values(STORE.clubs).find(c => c.demo); if (old) return old;
+  if (DEMO) return DEMO;
   const id = uid('club_');
   const names = [['Minh Quân', '🦅', 4, '1111'], ['Thu Lan', '🦊', 3, '2222'], ['Hoàng Nam', '🐯', 5], ['Bảo Ngọc', '🦄', 2], ['Đức Anh', '⚡', 4], ['Thanh Hà', '🐬', 3], ['Quốc Bảo', '🦁', 3], ['Mai Anh', '🌟', 2], ['Tuấn Kiệt', '🔥', 5], ['Phương Linh', '🍀', 1]];
   const members = names.map(([name, avatar, level], i) => ({ id: 'm' + i + id.slice(-4), name, avatar, level, phone: '', active: true, joinedAt: Date.now() - 864e5 * 90 + i }));
@@ -248,6 +248,6 @@ async function seedDemo() {
   let nx2 = addDays(nx, 1); while (![2, 4, 6].includes(parseDay(nx2).getDay())) nx2 = addDays(nx2, 1);
   c.sessions.push({ id: uid('s_'), date: nx2, time: '19:00', venue: c.schedule.venue, note: '', status: 'open', rsvp: { [members[1].id]: 'yes', [members[3].id]: 'yes' }, attendees: [], guests: [], costs: [{ label: 'Tiền sân', amount: 240000 }, { label: 'Tiền cầu', amount: 150000 }], split: 'equal', payer: members[0].id, teams: null });
   c.meMid = members[0].id; // bạn đóng vai Minh Quân để thử vote, công nợ
-  STORE.clubs[id] = c; persistLocal();
+  DEMO = c; // không lưu vào máy
   return c;
 }

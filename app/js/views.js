@@ -44,7 +44,7 @@ const cap1 = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 const err = () => UI.err ? `<p class="err" role="alert">${esc(UI.err)}</p>` : '';
 const meAva = (cls = '') => ME && ME.photo ? `<span class="ava ${cls}" style="background:url('${esc(ME.photo)}') center/cover"></span>` : `<span class="ava ${cls}" style="--ac:var(--volt);color:var(--navy);font-weight:800">${esc(initials((ME && ME.name) || 'Bạn').slice(0, 2) || '🙂')}</span>`;
 const roleP = r => r ? `<span class="pill ${r === 'member' ? 'sky' : 'volt'}">${r === 'member' ? '🏃' : '🛡️'} ${roleLabel(r)}</span>` : '';
-const guideLink = () => `<a class="guide" href="../huong-dan-su-dung.pdf?v=3" target="_blank" rel="noopener"><span class="gi" aria-hidden="true">📘</span><span class="grow"><span class="gt">Hướng dẫn sử dụng</span><span class="gs">Đọc trước khi dùng · PDF có hình minh họa</span></span><span class="go"><span class="gol">Mở PDF </span>↗</span></a>`;
+const guideLink = () => `<a class="guide" href="../huong-dan-su-dung.pdf?v=4" target="_blank" rel="noopener"><span class="gi" aria-hidden="true">📘</span><span class="grow"><span class="gt">Hướng dẫn sử dụng</span><span class="gs">Đọc trước khi dùng · PDF có hình minh họa</span></span><span class="go"><span class="gol">Mở PDF </span>↗</span></a>`;
 const googleBtn = (label = 'Tiếp tục với Google') => `<button class="btn block gbtn" data-act="googleSignIn" ${UI.busy ? 'disabled' : ''}><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>${label}</button>`;
 
 function sessCard(c, s, act = 'openSession') {
@@ -104,18 +104,15 @@ function vWelcome() {
   </section>
   ${guideLink()}
   ${pj}
+  ${localClubs().length ? `<div class="note warn">📱 Máy này có <b>${localClubs().length} hội</b> từ bản cũ (${localClubs().map(c => esc(c.name)).join(', ')}). <b>Đăng nhập</b> để đưa lên đám mây, giữ nguyên lịch sử và công nợ.</div>` : ''}
   ${CLOUD ? `<section class="card stack">
-    <div class="stack" style="gap:2px"><h1 class="h2 disp">Đăng nhập</h1><p class="tiny muted b">Mỗi người một tài khoản. Bạn có thể là hội viên hội này, quản trị hội khác.</p></div>
+    <div class="stack" style="gap:2px"><h1 class="h2 disp">Đăng nhập</h1><p class="tiny muted b">Mỗi người một tài khoản. Bạn có thể là hội viên hội này, quản trị hội khác. Dữ liệu lưu an toàn trên đám mây, đổi điện thoại không mất.</p></div>
     ${googleBtn()}
     <button class="btn block ghost" data-act="authMode" data-m="login">✉️ Đăng nhập bằng email</button>
     <p class="tiny center b">Chưa có tài khoản? <button class="link" data-act="authMode" data-m="register">Đăng ký bằng email</button></p>
     ${err()}
-  </section>` : `<div class="note warn">Đăng nhập tài khoản chưa được bật trên trang này. Bạn vẫn dùng đầy đủ tính năng ở chế độ <b>trên máy này</b>.</div>`}
-  <div class="stack">
-    <div class="eyebrow center">${CLOUD ? 'Hoặc dùng thử, không cần tài khoản' : 'Bắt đầu'}</div>
-    <button class="choice" data-act="demo"><span class="ic" style="background:var(--warn-soft)">🧪</span><span><b>Xem hội mẫu</b><span class="tiny muted b">Hội cầu lông có sẵn lịch, vote, công nợ để bạn bấm thử</span></span></button>
-    <button class="choice" data-act="useLocal"><span class="ic" style="background:var(--sky-soft)">📱</span><span><b>Dùng trên máy này</b><span class="tiny muted b">Dữ liệu chỉ lưu trong trình duyệt. ${CLOUD ? 'Sau này đăng nhập để đưa lên đám mây' : 'Nhớ tải file sao lưu định kỳ'}</span></span></button>
-  </div>
+  </section>` : `<div class="note warn">Chưa kết nối được máy chủ đăng nhập. Kiểm tra mạng rồi tải lại trang.</div>`}
+  <button class="choice" data-act="demo"><span class="ic" style="background:var(--warn-soft)">🧪</span><span><b>Chơi thử hội mẫu</b><span class="tiny muted b">Không cần tài khoản · bấm thử vote, chia tiền, công nợ · dữ liệu mẫu không được lưu</span></span></button>
   <p class="foot"><button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button> · <a class="link" href="../">Giới thiệu Sport Share</a></p>`;
 }
 
@@ -155,11 +152,12 @@ function vHome() {
     if (nRep) alerts.push([c, `💸 ${nRep} người báo đã chuyển khoản, chờ xác nhận`, 'money']);
     const wait = c.sessions.filter(s => s.status === 'open' && s.date < dayKey()).length;
     if (wait) alerts.push([c, `⏳ ${wait} ${sp.unit} đã qua chưa chốt tiền`, 'sessions']);
+    if (needBackup(c)) alerts.push([c, `💾 ${Math.floor((Date.now() - lastBackup(c)) / 864e5)} ngày chưa tải file sao lưu`, 'settings']);
   });
   const loading = ME && !CLUBS_LOADED;
-  return `<header class="apphead" style="margin-bottom:0"><div class="top">${meAva('lg')}<div class="grow"><div class="s">${ME ? 'Xin chào 👋' : 'Đang dùng trên máy này'}</div><div class="t ellip">${esc(name)}</div></div><button class="hbtn" data-act="go" data-v="account">⚙️ Tài khoản</button></div>
+  return `<header class="apphead" style="margin-bottom:0"><div class="top">${meAva('lg')}<div class="grow"><div class="s">Xin chào 👋</div><div class="t ellip">${esc(name)}</div></div><button class="hbtn" data-act="go" data-v="account">⚙️ Tài khoản</button></div>
     <div class="stats"><div class="stat"><b>${clubs.length}</b><span>Hội</span></div><div class="stat hot"><b>${soon.length}</b><span>Buổi 14 ngày</span></div><div class="stat"><b>${myDebt ? vndShort(myDebt) : '0đ'}</b><span>Cần trả</span></div></div></header>
-  ${!ME ? `<div class="note warn stack" style="gap:8px"><span>📱 Hội chỉ lưu trên máy này, hội viên chưa dùng chung được.</span>${CLOUD ? '<button class="btn sm" data-act="goWelcome">Đăng nhập để mời hội viên</button>' : ''}</div>` : ''}
+  ${localClubs().length ? `<section class="card stack" style="border-left:5px solid var(--warn)"><b>📱 ${localClubs().length} hội cũ còn trên máy này</b><p class="tiny muted b">Hội tạo ở bản cũ chỉ lưu trong trình duyệt, dễ mất và hội viên chưa dùng chung được. Đưa lên đám mây (giữ nguyên lịch sử, công nợ):</p><div class="row wrap">${localClubs().map(c => `<button class="btn sm" data-act="uploadSheet" data-cid="${c.id}">☁️ ${esc(c.name)}</button>`).join('')}</div></section>` : ''}
   ${DEV.joins.length ? DEV.joins.map(j => `<div class="note">⏳ Đã xin vào <b>${esc(j.clubName)}</b>, chờ quản trị duyệt. <button class="link tiny" data-act="cancelJoin" data-cid="${esc(j.clubId)}">Hủy</button></div>`).join('') : ''}
   ${alerts.length ? `<section class="card stack" style="border-left:5px solid var(--brand)">${secH('Việc cần làm')}<div class="list">${alerts.map(([c, t, tab]) => `<button class="item" data-act="openClub" data-cid="${c.id}" data-t="${tab}"><span class="ava sm" style="--ac:color-mix(in srgb,${sportOf(c).c} 18%,var(--surface))">${sportOf(c).ic}</span><span class="tx"><b>${t}</b><span class="tiny muted b">${esc(c.name)}</span></span><span class="faint" style="font-size:22px">›</span></button>`).join('')}</div></section>` : ''}
   ${debts.length ? `<section class="card stack" style="border-left:5px solid var(--bad)">${secH('Cần thanh toán', `<b class="num bad-t">${vnd(myDebt)}</b>`)}<div class="list">${debts.map(([c, d]) => `<button class="item" data-act="openClub" data-cid="${c.id}" data-t="debt"><span class="ava sm" style="--ac:color-mix(in srgb,${sportOf(c).c} 18%,var(--surface))">${sportOf(c).ic}</span><span class="tx"><b>${esc(c.name)}</b><span class="tiny muted b">${unpaidOf(c, myMid(c)).length} khoản · quét VietQR để trả</span></span><span class="amt bad-t">${vnd(d)}</span></button>`).join('')}</div></section>` : ''}
@@ -182,22 +180,21 @@ function joinSheet() {
 function vAccount() {
   const locals = localClubs();
   return `${backBtn()}
-  <section class="card stack" style="align-items:center;text-align:center">${meAva('lg')}<h1 class="h2">${esc(ME ? ME.name : 'Chế độ trên máy này')}</h1>${ME ? `<p class="tiny muted b">${esc(ME.email || '')}${ME.provider === 'google.com' ? ' · Google' : ME.provider === 'password' ? ' · Email' : ''}</p>` : ''}</section>
-  ${ME ? `<form class="card stack" data-form="myName">${secH('Tên hiển thị')}<div class="row"><input class="input grow" name="name" value="${esc(ME.name)}" aria-label="Tên hiển thị" maxlength="40"><button class="btn sm navy" type="submit">Lưu</button></div><p class="tiny muted b">Tên này hiện khi bạn xin vào hội mới. Tên trong từng hội do bạn hoặc quản trị hội đó đặt.</p></form>`
-    : `<section class="card stack">${CLOUD ? `<p class="b">Đăng nhập để hội viên dùng chung trên điện thoại của họ.</p><button class="btn block" data-act="goWelcome">Đăng nhập</button>` : '<p class="tiny muted b">Đăng nhập tài khoản chưa được bật trên trang này.</p>'}</section>`}
-  ${locals.length || !ME ? `<section class="card stack">${secH('📱 Hội trên máy này', `<span class="pill">${locals.length}</span>`)}
-    ${locals.length ? `<div class="list">${locals.map(c => `<div class="item"><span class="ava sm">${sportOf(c).ic}</span><span class="tx"><b>${esc(c.name)}</b><span class="tiny muted b">${activeMembers(c).length} hội viên · ${c.sessions.length} buổi${c.demo ? ' · hội mẫu' : ''}</span></span>${ME && CLOUD && !c.demo ? `<button class="btn xs" data-act="uploadSheet" data-cid="${c.id}">☁️ Lên mây</button>` : ''}</div>`).join('')}</div>` : '<p class="tiny muted b">Chưa có hội nào trên máy này.</p>'}
-    <p class="tiny muted b">${ME ? 'Đưa hội lên đám mây để hội viên đăng nhập và dùng chung. Lịch sử buổi, công nợ, quỹ được giữ nguyên.' : 'Dữ liệu chỉ nằm trong trình duyệt này. Tải file sao lưu định kỳ.'}</p>
-    ${restoreBlock(locals.length > 0)}</section>` : ''}
+  <section class="card stack" style="align-items:center;text-align:center">${meAva('lg')}<h1 class="h2">${esc(ME ? ME.name : '')}</h1><p class="tiny muted b">${esc((ME && ME.email) || '')}${ME && ME.provider === 'google.com' ? ' · Google' : ME && ME.provider === 'password' ? ' · Email' : ''}</p></section>
+  <form class="card stack" data-form="myName">${secH('Tên hiển thị')}<div class="row"><input class="input grow" id="my-name" name="name" value="${esc(ME ? ME.name : '')}" aria-label="Tên hiển thị" maxlength="40"><button class="btn sm navy" type="submit">Lưu</button></div><p class="tiny muted b">Tên này hiện khi bạn xin vào hội mới. Tên trong từng hội do bạn hoặc quản trị hội đó đặt.</p></form>
+  ${locals.length ? `<section class="card stack">${secH('📱 Hội cũ trên máy này', `<span class="pill">${locals.length}</span>`)}
+    <div class="list">${locals.map(c => `<div class="item"><span class="ava sm">${sportOf(c).ic}</span><span class="tx"><b>${esc(c.name)}</b><span class="tiny muted b">${activeMembers(c).length} hội viên · ${c.sessions.length} buổi</span></span><button class="btn xs" data-act="uploadSheet" data-cid="${c.id}">☁️ Lên mây</button></div>`).join('')}</div>
+    <p class="tiny muted b">Đưa lên đám mây để không mất dữ liệu và hội viên dùng chung được. Lịch sử buổi, công nợ, quỹ được giữ nguyên.</p></section>` : ''}
+  <section class="card stack">${secH('💾 Khôi phục từ file sao lưu')}<p class="tiny muted b">Có file sao lưu Sport Share (.json)? Hội trong file sẽ được khôi phục lên đám mây thành hội của bạn.</p>${restoreBlock(locals.length > 0)}</section>
   <section class="card stack">${secH('Giao diện')}<div class="chips">${[['auto', '🌓 Theo máy'], ['light', '☀️ Sáng'], ['dark', '🌙 Tối']].map(([k, t]) => `<button class="chip ${(DEV.theme || 'auto') === k ? 'on' : ''}" data-act="theme" data-k="${k}">${t}</button>`).join('')}</div></section>
   ${guideLink()}
   ${donateBlock()}
-  <div class="stack">${ME ? '<button class="btn block ghost" data-act="signOut">↩ Đăng xuất</button>' : '<button class="btn block ghost" data-act="exitLocal">↩ Thoát chế độ trên máy này</button>'}</div>
+  <div class="stack"><button class="btn block ghost" data-act="signOut">↩ Đăng xuất</button></div>
   <p class="foot">Sport Share v${APP.ver}${CLOUD && CLOUD.emulator ? ' · môi trường thử nghiệm' : ''} · <button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button></p>`;
 }
 function restoreBlock(withExport) {
   return `<div class="row wrap">${withExport ? '<button class="btn sm ok" data-act="exportData">⬇️ Tải file sao lưu</button>' : ''}<label class="btn sm ghost" for="importFile" style="cursor:pointer">⬆️ Khôi phục từ file</label><input type="file" id="importFile" accept="application/json,.json" hidden></div>
-  ${UI.confirm === 'import' && UI.importData ? `<div class="note warn stack" style="gap:8px">File có hội <b>${esc(UI.importData.names)}</b>. Hội sẽ được khôi phục vào máy này${ME && CLOUD ? ' (sau đó bấm ☁️ Lên mây để dùng chung)' : ''}.<div class="row"><button class="btn sm ok" data-act="doImport">Khôi phục</button><button class="btn sm ghost" data-act="cancelConfirm">Hủy</button></div></div>` : ''}`;
+  ${UI.confirm === 'import' && UI.importData ? `<div class="note warn stack" style="gap:8px">File có hội <b>${esc(UI.importData.names)}</b>. Hội sẽ được khôi phục lên đám mây thành hội mới của bạn.<div class="row"><button class="btn sm ok" data-act="doImport">Khôi phục</button><button class="btn sm ghost" data-act="cancelConfirm">Hủy</button></div></div>` : ''}`;
 }
 function uploadSheet(c) {
   return `<form class="stack" data-form="upload" data-cid="${c.id}"><h2 class="h2 disp">☁️ Đưa “${esc(c.name)}” lên đám mây</h2>
@@ -226,8 +223,8 @@ function vRegister() {
     <div class="field"><label for="r-venue">${sp.place} quen thuộc</label><input class="input" id="r-venue" name="venue" placeholder="VD: Nhà thi đấu Quận 7 · Sân 3" value="${esc(r.venue || '')}"></div>
     <div class="field"><span class="lbl">Lịch chơi cố định (không bắt buộc)</span><div class="chips">${[1, 2, 3, 4, 5, 6, 0].map(d => `<label class="chip ${(r.days || []).includes(d) ? 'on' : ''}" style="cursor:pointer"><input type="checkbox" name="days" value="${d}" ${(r.days || []).includes(d) ? 'checked' : ''} hidden data-chg="checkChip">${WD[d]}</label>`).join('')}</div></div>
     <div class="field"><label for="r-time">Giờ bắt đầu</label><input class="input" id="r-time" name="time" type="time" value="${esc(r.time || '19:00')}"></div>
-    ${ME ? `<label class="check on" style="cursor:pointer"><input type="checkbox" name="withMe" value="1" checked style="width:22px;height:22px;accent-color:var(--sport)"><span class="grow b">Tôi cũng chơi trong hội này<span class="tiny muted b" style="display:block">Bạn có tên trong danh sách, được vote và chia tiền như mọi người</span></span></label>` : ''}
-    <p class="note">${ME ? '☁️ Hội lưu trên đám mây. Sau khi lập, gửi link mời để hội viên đăng nhập và dùng chung.' : '📱 Hội lưu trên máy này. Đăng nhập sau để đưa lên đám mây và mời hội viên.'}</p>
+    <label class="check on" style="cursor:pointer"><input type="checkbox" name="withMe" value="1" checked style="width:22px;height:22px;accent-color:var(--sport)"><span class="grow b">Tôi cũng chơi trong hội này<span class="tiny muted b" style="display:block">Bạn có tên trong danh sách, được vote và chia tiền như mọi người</span></span></label>
+    <p class="note">☁️ Hội lưu trên đám mây. Sau khi lập, gửi link mời để hội viên đăng nhập và dùng chung.</p>
     ${err()}
     <button class="btn block" type="submit" ${UI.busy ? 'disabled' : ''}>⚡ Lập hội</button>
   </form>`;
@@ -259,9 +256,13 @@ function tabbar(tabs, cur, act) {
 
 /* ================= MỘT HỘI ================= */
 function vClub() {
-  const c = club(); if (!c) return vHome();
+  const c = club(); if (!c) return ME ? vHome() : vWelcome();
   if (!role(c)) return vHome();
-  return canAdmin(c) ? vAdmin(c) : vMember(c);
+  const html = canAdmin(c) ? vAdmin(c) : vMember(c);
+  const i = html.indexOf('</header>') + 9;
+  const banner = c.demo ? `<div class="note warn stack" style="gap:8px"><span>🧪 <b>Đang chơi thử hội mẫu.</b> Dữ liệu mẫu, không được lưu. Bạn là quản trị và đóng vai Minh Quân.</span><div class="row wrap">${ME ? '<button class="btn sm ghost" data-act="exitDemo">← Về trang của tôi</button>' : '<button class="btn sm" data-act="exitDemo">Đăng nhập để lập hội thật</button>'}</div></div>`
+    : !isCloud(c) ? `<div class="note warn stack" style="gap:8px"><span>📱 <b>Hội cũ trên máy này</b>: dễ mất khi xóa dữ liệu trình duyệt, hội viên chưa dùng chung được.</span><button class="btn sm" data-act="uploadSheet" data-cid="${c.id}">☁️ Đưa lên đám mây</button></div>` : '';
+  return html.slice(0, i) + banner + html.slice(i);
 }
 
 /* ---------- giao diện hội viên ---------- */
@@ -388,7 +389,8 @@ function vAHome(c) {
     <div class="list">${steps.map(([done, t, act, tab, btn]) => `<div class="item"><span class="ava sm" style="--ac:${done ? 'var(--ok-soft)' : 'var(--surface-2)'}">${done ? '✅' : '⬜'}</span><b class="tx" style="${done ? 'opacity:.6' : ''}">${t}</b><button class="btn xs ${done ? 'ghost' : ''}" data-act="${act}" ${tab ? `data-t="${tab}"` : ''}>${done && act === 'memberSheet' ? '＋ Thêm nữa' : btn}</button></div>`).join('')}</div>
     <button class="btn sm ghost" data-act="dismissFresh">Ẩn khung này</button></section>` : '';
   const reported = new Set(c.charges.filter(x => !x.paid && x.reportedAt).map(x => x.mid)).size;
-  return `${fresh}
+  const bk = needBackup(c) ? `<div class="note warn stack" style="gap:8px"><span>💾 <b>${Math.floor((Date.now() - lastBackup(c)) / 864e5)} ngày</b> chưa tải file sao lưu. Dữ liệu trên đám mây vẫn an toàn, nhưng nếu ai đó xóa nhầm buổi hay công nợ thì file sao lưu là cách duy nhất để xem lại.</span><div class="row wrap"><button class="btn sm ok" data-act="exportData">⬇️ Tải file sao lưu</button><button class="btn sm ghost" data-act="snoozeBackup" data-cid="${c.id}">Để sau</button></div></div>` : '';
+  return `${fresh}${bk}
   ${(c.requests || []).length ? `<button class="note ok" style="text-align:left" data-act="atab" data-t="members">📨 <b>${c.requests.length}</b> người xin vào hội. Chạm để duyệt.</button>` : ''}
   ${reported ? `<button class="note ok" style="text-align:left" data-act="atab" data-t="money">💸 <b>${reported}</b> người báo đã chuyển khoản. Chạm để xác nhận.</button>` : ''}
   <div class="grid2">
@@ -522,7 +524,8 @@ function bulkSheet() {
     <button class="btn block" type="submit">Thêm vào hội</button></form>`;
 }
 function confirmBox() {
-  const t = { delSession: 'Xóa buổi này cùng toàn bộ công nợ đã tạo từ buổi?', reopenSession: 'Mở lại sẽ xóa các khoản công nợ của buổi này (kể cả khoản đã thu) để chốt lại. Tiếp tục?', cancelSession: 'Hủy buổi này? Hội viên sẽ thấy trạng thái Đã hủy.' }[UI.confirm] || 'Bạn chắc chứ?';
+  const cs = (curSession() && club()) ? club().charges.filter(x => x.ref === curSession().id) : [];
+  const t = { delSession: cs.length ? `Xóa buổi này cùng ${cs.length} khoản công nợ (${cs.filter(x => x.paid).length} khoản đã thu)? Không hoàn tác được.` : 'Xóa buổi này? Không hoàn tác được.', reopenSession: 'Mở lại sẽ xóa các khoản công nợ của buổi này (kể cả khoản đã thu) để chốt lại. Tiếp tục?', cancelSession: 'Hủy buổi này? Hội viên sẽ thấy trạng thái Đã hủy.' }[UI.confirm] || 'Bạn chắc chứ?';
   return `<div class="note warn stack" style="gap:8px;position:sticky;bottom:12px;box-shadow:var(--shadow)"><b>${t}</b><div class="row"><button class="btn sm danger" data-act="doConfirm">Đồng ý</button><button class="btn sm ghost" data-act="cancelConfirm">Thôi</button></div></div>`;
 }
 function sessionFormSheet(c, s) {
@@ -647,7 +650,7 @@ function memberSheet(c, m) {
         : `<p class="b">⚪ Chưa vào app</p><button type="button" class="btn sm volt" data-act="personalInvite" data-mid="${m.id}">📨 Chép link mời riêng cho ${esc(m.name)}</button><p class="tiny muted b">Gửi link này riêng cho ${esc(m.name)}. Mở link, đăng nhập là vào hội ngay với đúng tên này, giữ nguyên lịch sử.</p>`}</section>`
       : `<label class="row b tiny" style="cursor:pointer"><input type="checkbox" data-act="setMe" data-mid="${m.id}" ${isMe ? 'checked' : ''} style="width:20px;height:20px"> Đây là tôi (để vote và xem công nợ của mình)</label>`}
       ${!isOwnerM && !isMe ? `<div class="grid2"><button type="button" class="btn sm ghost" data-act="toggleActive" data-mid="${m.id}">${m.active === false ? '↺ Cho quay lại' : '⏸ Cho nghỉ'}</button><button type="button" class="btn sm danger" data-act="delMember" data-mid="${m.id}">🗑 Xóa hẳn</button></div>` : ''}
-      ${UI.confirm === 'delMember' ? `<div class="note warn stack" style="gap:8px">Xóa ${esc(m.name)} và toàn bộ công nợ của người này?<div class="row"><button type="button" class="btn sm danger" data-act="doDelMember" data-mid="${m.id}">Xóa</button><button type="button" class="btn sm ghost" data-act="cancelConfirm">Thôi</button></div></div>` : ''}
+      ${UI.confirm === 'delMember' ? `<div class="note warn stack" style="gap:8px">Xóa hẳn ${esc(m.name)}${debtOf(c, m.id) ? ` (đang nợ ${vnd(debtOf(c, m.id))})` : ''} cùng toàn bộ công nợ và lịch sử? Không hoàn tác được. Muốn giữ lịch sử thì chọn <b>Cho nghỉ</b>.<div class="row"><button type="button" class="btn sm danger" data-act="doDelMember" data-mid="${m.id}">Xóa</button><button type="button" class="btn sm ghost" data-act="cancelConfirm">Thôi</button></div></div>` : ''}
       <p class="tiny muted b">Tham gia ${attended(c, m.id)} ${sportOf(c).unit} · đã trả ${vnd(paidTotal(c, m.id))} · còn nợ ${vnd(debtOf(c, m.id))}</p>`}
   </form>`;
 }
@@ -672,16 +675,16 @@ function vASettings(c) {
     <button class="btn sm navy" type="submit">Lưu tài khoản</button>
     <p class="tiny muted b">Mã VietQR được tạo ngay trên máy, hội viên quét là có sẵn số tiền và nội dung chuyển khoản.</p></form>
 
-  ${!isCloud(c) ? `<section class="card stack">${secH('☁️ Dùng chung với hội viên')}<p class="tiny muted b">Hội đang lưu trên máy này. Đưa lên đám mây để mọi người đăng nhập, tự vote, xem công nợ và báo chuyển khoản trên điện thoại của mình.</p>${ME && CLOUD ? `<button class="btn sm" data-act="uploadSheet" data-cid="${c.id}">☁️ Đưa hội lên đám mây</button>` : CLOUD ? '<button class="btn sm" data-act="goWelcome">Đăng nhập để đưa lên đám mây</button>' : '<p class="note">Đăng nhập tài khoản chưa được bật trên trang này.</p>'}</section>` : ''}
+  ${!isCloud(c) && !c.demo ? `<section class="card stack">${secH('☁️ Đưa lên đám mây')}<p class="tiny muted b">Hội cũ đang lưu trên máy này. Đưa lên đám mây để không mất dữ liệu và mọi người tự vote, xem công nợ, báo chuyển khoản trên điện thoại của mình.</p><button class="btn sm" data-act="uploadSheet" data-cid="${c.id}">☁️ Đưa hội lên đám mây</button></section>` : ''}
 
   <section class="card stack">${secH('🔗 Link xem nhanh (không cần tài khoản)')}
     <p class="tiny muted b">Bản chụp lịch sắp tới, vote, bảng xếp hạng và công nợ hiện tại, gửi cho người chưa vào app. Khi số liệu thay đổi, tạo link mới.</p>
     <div class="grid2"><button class="btn sm volt" data-act="shareLink">Tạo & chép link</button><button class="btn sm ghost" data-act="previewShared">👁 Xem thử</button></div></section>
 
-  <section class="card stack">${secH('💾 Sao lưu')}<p class="tiny muted b">Tải toàn bộ dữ liệu hội ra file (để lưu trữ hoặc chuyển đi).</p><button class="btn sm ok" data-act="exportData">⬇️ Tải file sao lưu</button></section>
+  <section class="card stack">${secH('💾 Sao lưu')}<p class="tiny muted b">Tải toàn bộ hội viên, buổi chơi, công nợ, quỹ ra file .json. Cất vào Google Drive hoặc Zalo Cloud. Khi cần, mở <b>Tài khoản → Khôi phục từ file</b>.</p>${isCloud(c) ? `<p class="tiny b ${needBackup(c) ? 'warn-t' : 'ok-t'}">Lần sao lưu gần nhất: ${c.backupAt ? fmtTs(c.backupAt) : 'chưa có'} · app nhắc mỗi ${BACKUP_DAYS} ngày</p>` : ''}<button class="btn sm ok" data-act="exportData">⬇️ Tải file sao lưu</button></section>
   <div class="stack">
     ${r === 'owner' ? `<button class="btn block danger" data-act="askDelClub">🗑 Xóa hội${isCloud(c) ? '' : ' khỏi máy'}</button>` : '<button class="btn block danger" data-act="askLeave">Rời hội</button>'}
-    ${UI.confirm === 'delClub' ? `<div class="note warn stack" style="gap:8px"><b>Xóa vĩnh viễn hội “${esc(c.name)}”${isCloud(c) ? ' cho tất cả hội viên' : ' khỏi máy này'}?</b> Nên tải file sao lưu trước.<div class="row"><button class="btn sm danger" data-act="doDelClub">Xóa hội</button><button class="btn sm ghost" data-act="cancelConfirm">Thôi</button></div></div>` : ''}
+    ${UI.confirm === 'delClub' ? `<div class="note warn stack" style="gap:8px"><b>Xóa vĩnh viễn hội “${esc(c.name)}”${isCloud(c) ? ' cho tất cả hội viên' : ' khỏi máy này'}?</b><span class="tiny">Toàn bộ buổi chơi, công nợ, quỹ sẽ mất, không khôi phục được. Nên <button class="link" data-act="exportData">tải file sao lưu</button> trước.</span><div class="field"><label for="del-name">Gõ tên hội để xác nhận</label><input class="input" id="del-name" placeholder="${esc(c.name)}" autocomplete="off"></div><div class="row"><button class="btn sm danger" data-act="doDelClub">Xóa vĩnh viễn</button><button class="btn sm ghost" data-act="cancelConfirm">Thôi</button></div></div>` : ''}
     ${UI.confirm === 'leave' ? `<div class="note warn stack" style="gap:8px"><b>Rời “${esc(c.name)}”?</b> Bạn sẽ mất quyền quản trị hội này.<div class="row"><button class="btn sm danger" data-act="doLeave">Rời hội</button><button class="btn sm ghost" data-act="cancelConfirm">Thôi</button></div></div>` : ''}
   </div>`;
 }
@@ -728,10 +731,10 @@ function vLegal() {
     <h1 class="h2 disp">Chính sách quyền riêng tư</h1>
     <p class="tiny muted">Cập nhật ngày 27/11/2026.</p>
     ${h('1. Sport Share lưu những gì?')}<p>Tài khoản: tên hiển thị, email, ảnh đại diện Google (nếu đăng nhập bằng Google). Trong từng hội: tên hội, môn thể thao, lịch chơi, danh sách hội viên (tên, biểu tượng, trình độ, số điện thoại nếu quản trị nhập), vote đi / không đi, điểm danh, chi phí, công nợ, quỹ hội và tài khoản ngân hàng nhận tiền của hội.</p>
-    ${h('2. Dữ liệu nằm ở đâu?')}<p><b>Khi đăng nhập:</b> dữ liệu hội lưu trên Google Firebase (Cloud Firestore) để các thành viên dùng chung; đăng nhập do Firebase Authentication xử lý, Sport Share không thấy mật khẩu của bạn. <b>Khi dùng "trên máy này":</b> dữ liệu chỉ nằm trong trình duyệt, không gửi đi đâu.</p>
+    ${h('2. Dữ liệu nằm ở đâu?')}<p>Dữ liệu hội lưu trên Google Firebase (Cloud Firestore, máy chủ tại Singapore) để các thành viên dùng chung; đăng nhập do Firebase Authentication xử lý, Sport Share không thấy mật khẩu của bạn. Hội mẫu để chơi thử chỉ nằm trong trình duyệt và mất khi tải lại trang.</p>
     ${h('3. Ai xem được gì?')}<p>Chỉ thành viên của hội mới xem được hội đó. Hội viên chỉ thấy công nợ của chính mình; quản trị viên thấy công nợ cả hội và sổ quỹ. Hội viên chỉ tự vote, tự sửa tên/biểu tượng và báo đã chuyển khoản cho chính mình. Link mời và link xem nhanh: ai có link đều mở được, vì vậy chỉ gửi trong nhóm của hội.</p>
     ${h('4. Không quảng cáo, không bán dữ liệu')}<p>Không quảng cáo, không cookie theo dõi, không công cụ phân tích. Sport Share không bán hay chia sẻ dữ liệu cho bên thứ ba.</p>
-    ${h('5. Xóa dữ liệu')}<p>Hội viên có thể rời hội bất cứ lúc nào. Người lập hội xóa được toàn bộ hội. Muốn xóa tài khoản, hãy liên hệ qua trang dự án bên dưới.</p>
+    ${h('5. Xóa dữ liệu')}<p>Hội viên có thể rời hội bất cứ lúc nào. Người lập hội xóa được toàn bộ hội. Quản trị viên nên tải file sao lưu định kỳ (app nhắc mỗi 30 ngày) để phòng xóa nhầm. Muốn xóa tài khoản, hãy liên hệ qua trang dự án bên dưới.</p>
     ${h('6. Thanh toán và ủng hộ')}<p>Chuyển khoản diễn ra trong ứng dụng ngân hàng của bạn. Sport Share không nhận, không giữ và không lưu thông tin thanh toán nào.</p>
   </article>
   <article class="card stack" style="font-weight:500">
