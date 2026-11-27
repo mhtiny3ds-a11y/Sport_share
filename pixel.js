@@ -4,7 +4,7 @@
    - Không gửi email, tên, số điện thoại hay dữ liệu hội lên Meta.
    Dùng chung cho landing (/) và app (/app/). */
 (function () {
-  var META_PIXEL_ID = '';
+  var META_PIXEL_ID = '1908438420570807';
 
   var KEY = 'sportshare.consent.v1';
   var queue = [], loaded = false;
