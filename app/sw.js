@@ -1,6 +1,6 @@
 /* Sport Share service worker: lưu sẵn vỏ ứng dụng để mở được khi mất mạng. */
-const CACHE = 'sportshare-app-v4';
-const SHELL = ['./', 'index.html', 'css/app.css?v=4', 'js/qrcode.js?v=4', 'js/core.js?v=4', 'js/views.js?v=4', 'js/app.js?v=4', 'manifest.webmanifest', 'icon.svg', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
+const CACHE = 'sportshare-app-v5';
+const SHELL = ['./', 'index.html', 'css/app.css?v=5', 'js/qrcode.js?v=5', 'js/core.js?v=5', 'js/views.js?v=5', 'js/app.js?v=5', 'manifest.webmanifest', 'icon.svg', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
   'fonts/be-vietnam-pro-vietnamese-400-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-600-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-700-normal.woff2', 'fonts/be-vietnam-pro-vietnamese-800-normal.woff2',
   'fonts/be-vietnam-pro-latin-400-normal.woff2', 'fonts/be-vietnam-pro-latin-600-normal.woff2', 'fonts/be-vietnam-pro-latin-700-normal.woff2', 'fonts/be-vietnam-pro-latin-800-normal.woff2'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

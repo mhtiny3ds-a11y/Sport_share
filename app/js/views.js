@@ -44,9 +44,9 @@ const sportChip = s => `<span class="pill sport">${s.ic} ${esc(s.name)}</span>`;
 
 function sessCard(c, s, act = 'openSession') {
   const d = parseDay(s.date), sp = sportOf(c);
-  const yes = Object.values(s.rsvp || {}).filter(x => x === 'yes').length;
+  const vt = voteOf(c, s);
   const st = s.status === 'settled' ? '<span class="pill ok">Đã chốt</span>' : s.status === 'cancelled' ? '<span class="pill bad">Đã hủy</span>' : (s.date < dayKey() ? '<span class="pill warn">Chờ chốt</span>' : '<span class="pill sky">Sắp diễn ra</span>');
-  const who = s.status === 'settled' ? `${sessHeads(s)} người · ${vnd(sessCost(s))}` : `${yes} đăng ký${s.attendees.length ? ` · ${s.attendees.length} điểm danh` : ''}`;
+  const who = s.status === 'settled' ? `${sessHeads(s)} người · ${vnd(sessCost(s))}` : `✅ ${vt.going.length}${vt.max ? '/' + vt.max : ''} đi${vt.wait.length ? ` · ⏳ ${vt.wait.length} dự bị` : ''} · ❌ ${vt.no.length} không${s.attendees.length ? ` · ${s.attendees.length} điểm danh` : ''}`;
   return `<button class="sess ${s.status === 'settled' ? 'done' : ''} ${s.status === 'cancelled' ? 'cancel' : ''}" data-act="${act}" data-sid="${s.id}">
     <span class="date"><span class="w">${WD[d.getDay()]}</span><span class="d">${pad2(d.getDate())}</span><span class="m">Th${d.getMonth() + 1}</span></span>
     <span class="tx"><span class="row between"><b class="ellip">${sp.ic} ${cap1(sp.unit)} ${s.time || ''}</b>${st}</span>
@@ -96,7 +96,7 @@ function vWelcome() {
     <div class="sportstrip" aria-hidden="true">${Object.values(SPORTS).slice(0, 8).map(s => `<span>${s.ic}</span>`).join('')}</div>
   </section>
   <div class="stack">
-    <a class="guide" href="../huong-dan-su-dung.pdf?v=1" target="_blank" rel="noopener"><span class="gi" aria-hidden="true">📘</span><span class="grow"><span class="gt">Hướng dẫn sử dụng</span><span class="gs">Đọc trước khi dùng · PDF có hình minh họa</span></span><span class="go"><span class="gol">Mở PDF </span>↗</span></a>
+    <a class="guide" href="../huong-dan-su-dung.pdf?v=2" target="_blank" rel="noopener"><span class="gi" aria-hidden="true">📘</span><span class="grow"><span class="gt">Hướng dẫn sử dụng</span><span class="gs">Đọc trước khi dùng · PDF có hình minh họa</span></span><span class="go"><span class="gol">Mở PDF </span>↗</span></a>
     <button class="choice" data-act="toMembers"><span class="ic" style="background:var(--sky-soft)">🏃</span><span><b>Hội viên vào xem</b><span class="tiny muted b">${c ? 'Hội: ' + esc(c.name) : 'Chọn tên mình và nhập mã PIN 4 số'}</span></span></button>
     <button class="choice" data-act="go" data-v="adminLogin"><span class="ic" style="background:var(--ok-soft)">🛡️</span><span><b>Quản trị viên đăng nhập</b><span class="tiny muted b">Tạo buổi, điểm danh, chia tiền, thu công nợ</span></span></button>
     <button class="choice" data-act="startReg"><span class="ic" style="background:color-mix(in srgb,var(--brand) 16%,var(--surface))">⚡</span><span><b>Lập hội mới</b><span class="tiny muted b">Chọn môn thể thao · thêm hội viên · mỗi người một mã PIN</span></span></button>
@@ -234,9 +234,17 @@ function vMember() {
   const pend = upcoming(c).filter(s => !(s.rsvp || {})[m.id]).length;
   return head + body + tabbar([['home', '📅', 'Lịch', pend], ['debt', '💸', 'Công nợ', unpaidOf(c, m.id).length], ['rank', '🏆', 'Xếp hạng'], ['me', esc(m.avatar), 'Của tôi']], UI.tab, 'tab');
 }
-function rsvpBtns(s, mid) {
-  const r = (s.rsvp || {})[mid];
-  return `<div class="row" style="gap:8px"><button class="btn sm ${r === 'yes' ? 'ok' : 'ghost'}" style="flex:1" data-act="rsvp" data-sid="${s.id}" data-r="yes">${r === 'yes' ? '✅ Sẽ tham gia' : 'Tham gia'}</button><button class="btn sm ${r === 'no' ? 'danger' : 'ghost'}" style="flex:1" data-act="rsvp" data-sid="${s.id}" data-r="no">${r === 'no' ? '✖ Báo vắng' : 'Vắng'}</button></div>`;
+function rsvpBtns(s, mid, c = club()) {
+  const r = (s.rsvp || {})[mid]; const vt = voteOf(c, s);
+  const wait = vt.wait.includes(mid);
+  return `<div class="stack" style="gap:6px"><div class="row" style="gap:8px"><button class="btn sm ${r === 'yes' ? 'ok' : 'ghost'}" style="flex:1" data-act="rsvp" data-sid="${s.id}" data-r="yes">${r === 'yes' ? '✅ Tôi đi' : 'Đi'}</button><button class="btn sm ${r === 'no' ? 'danger' : 'ghost'}" style="flex:1" data-act="rsvp" data-sid="${s.id}" data-r="no">${r === 'no' ? '❌ Tôi không đi' : 'Không đi'}</button></div>
+    ${wait ? `<p class="tiny b warn-t">⏳ Đã đủ ${vt.max} chỗ, bạn đang ở danh sách dự bị số ${vt.wait.indexOf(mid) + 1}.</p>` : ''}</div>`;
+}
+/* danh sách vote dạng chip: Đi / Dự bị / Không đi / Chưa vote */
+function voteLists(c, s) {
+  const vt = voteOf(c, s); const chip = id => { const m = memberOf(c, id); return m ? `<span class="pill">${esc(m.avatar)} ${esc(m.name)}</span>` : ''; };
+  const row = (t, ids, cls) => ids.length ? `<div class="stack" style="gap:6px"><span class="tiny b ${cls}">${t} (${ids.length})</span><div class="chips">${ids.map(chip).join('')}</div></div>` : '';
+  return `${row('✅ Đi' + (vt.max ? ` · tối đa ${vt.max}` : ''), vt.going, 'ok-t')}${row('⏳ Dự bị', vt.wait, 'warn-t')}${row('❌ Không đi', vt.no, 'bad-t')}${row('❔ Chưa vote', vt.none, 'faint')}` || '<span class="muted tiny b">Chưa có ai vote.</span>';
 }
 function vMHome(c, m) {
   const up = upcoming(c); const sp = sportOf(c);
@@ -286,12 +294,11 @@ function themeBlock() {
 function sessionSheet(c, s, mid) {
   const sp = sportOf(c); const { shares, per, total } = sessShares(c, s);
   const att = s.attendees.map(id => memberOf(c, id)).filter(Boolean);
-  const yes = Object.entries(s.rsvp || {}).filter(([, r]) => r === 'yes').map(([id]) => memberOf(c, id)).filter(Boolean);
   return `<div class="row"><span class="ava lg" style="--ac:color-mix(in srgb,${sp.c} 18%,var(--surface))">${sp.ic}</span><div class="grow"><div class="eyebrow">${esc(cap1(sp.unit))} ${s.status === 'settled' ? '· đã chốt' : s.status === 'cancelled' ? '· đã hủy' : ''}</div><h2 class="h2">${fmtDateLong(s.date)}</h2><p class="muted b">⏰ ${esc(s.time || '')} · 📍 ${esc(s.venue || '')}</p></div></div>
   ${s.note ? `<div class="note">📝 ${esc(s.note)}</div>` : ''}
   ${mid && s.status === 'open' ? rsvpBtns(s, mid) : ''}
   ${s.status === 'settled' ? `<section class="card stack">${secH('Chi phí')}<div class="list">${s.costs.map(x => `<div class="item"><span class="tx"><b>${esc(x.label)}</b></span><span class="amt">${vnd(x.amount)}</span></div>`).join('')}<div class="item"><span class="tx"><b>Tổng · ${sessHeads(s)} người</b></span><span class="amt">${vnd(total)}</span></div></div>${per ? `<p class="b">Mỗi người: <span style="color:var(--brand)">${vnd(per)}</span></p>` : ''}${mid && shares[mid] ? `<div class="note">Phần của bạn: <b>${vnd(shares[mid])}</b></div>` : ''}</section>` : ''}
-  <section class="card stack">${secH(s.status === 'settled' ? `Có mặt (${att.length})` : `Đăng ký tham gia (${yes.length})`)}<div class="chips">${(s.status === 'settled' ? att : yes).map(m => `<span class="pill">${esc(m.avatar)} ${esc(m.name)}</span>`).join('') || '<span class="muted tiny b">Chưa có ai.</span>'}</div>${(s.guests || []).length ? `<p class="tiny muted b">+ ${s.guests.length} khách: ${s.guests.map(g => esc(g.name)).join(', ')}</p>` : ''}</section>
+  <section class="card stack">${s.status === 'settled' ? `${secH(`Có mặt (${att.length})`)}<div class="chips">${att.map(m => `<span class="pill">${esc(m.avatar)} ${esc(m.name)}</span>`).join('') || '<span class="muted tiny b">Chưa có ai.</span>'}</div>` : `${secH('🗳️ Vote đi / không đi')}${voteLists(c, s)}`}${(s.guests || []).length ? `<p class="tiny muted b">+ ${s.guests.length} khách: ${s.guests.map(g => esc(g.name)).join(', ')}</p>` : ''}</section>
   ${s.teams ? teamsBlock(c, s) : ''}
   <button class="btn block ghost" data-act="closeSheet">Đóng</button>`;
 }
@@ -323,12 +330,18 @@ function vAHome(c) {
   const mk = monthKey(); const monthS = settledSessions(c).filter(s => s.date.startsWith(mk));
   const monthCost = monthS.reduce((a, s) => a + sessCost(s), 0);
   const { list } = rankList(c, 'month');
-  const fresh = UI.fresh ? `<section class="card hl stack"><div class="row"><span class="ava lg" style="--ac:var(--volt)">🎉</span><div class="grow"><b class="h3">Hội đã sẵn sàng!</b><p class="tiny muted b">Thêm hội viên (mỗi người một mã PIN), nhập tài khoản nhận tiền rồi tạo ${sp.unit} đầu tiên.</p></div></div>
-    <div class="grid2"><button class="btn sm" data-act="memberSheet">＋ Thêm hội viên</button><button class="btn sm navy" data-act="atab" data-t="settings">🏦 Tài khoản nhận tiền</button></div><button class="btn sm ghost" data-act="dismissFresh">Để sau</button></section>` : '';
+  const nM = activeMembers(c).length;
+  const steps = [[nM >= 2, `👥 Thêm hội viên${nM ? ` (đã có ${nM})` : ''}`, 'memberSheet', '', '＋ Thêm'], [bankReady(c.bank), '🏦 Tài khoản nhận tiền VietQR', 'atab', 'settings', 'Nhập'], [c.sessions.length > 0, `📅 Tạo ${sp.unit} đầu tiên`, 'newSession', '', 'Tạo']];
+  const showSetup = UI.fresh !== 'off' && !c.setupDone && (UI.fresh || steps.some(x => !x[0]));
+  const fresh = showSetup ? `<section class="card hl stack"><div class="row"><span class="ava lg" style="--ac:var(--volt)">🎉</span><div class="grow"><b class="h3">Bắt đầu với hội của bạn</b><p class="tiny muted b">${steps.filter(x => x[0]).length}/3 bước · mỗi hội viên có một mã PIN 4 số để vào xem.</p></div></div>
+    <div class="list">${steps.map(([done, t, act, tab, btn]) => `<div class="item"><span class="ava sm" style="--ac:${done ? 'var(--ok-soft)' : 'var(--surface-2)'}">${done ? '✅' : '⬜'}</span><b class="tx" style="${done ? 'opacity:.6' : ''}">${t}</b><button class="btn xs ${done ? 'ghost' : ''}" data-act="${act}" ${tab ? `data-t="${tab}"` : ''}>${done && act === 'memberSheet' ? '＋ Thêm nữa' : btn}</button></div>`).join('')}</div>
+    <button class="btn sm ghost" data-act="dismissFresh">${steps.every(x => x[0]) ? 'Xong, ẩn khung này' : 'Ẩn khung này'}</button></section>` : '';
   return `${fresh}
   <div class="grid2">
     <button class="btn" data-act="newSession">＋ Tạo ${sp.unit}</button>
     <button class="btn volt" data-act="chargeSheet" data-k="monthly">💰 Thu quỹ tháng</button>
+    <button class="btn navy sm" data-act="memberSheet">👥 Thêm hội viên</button>
+    <button class="btn ghost sm" data-act="shareLink">🔗 Gửi link cho hội</button>
   </div>
   ${waiting.length ? `<div class="note warn">⏳ Có <b>${waiting.length}</b> ${sp.unit} đã qua nhưng chưa chốt tiền. <button class="link" data-act="openSession" data-sid="${waiting[0].id}">Chốt ngay</button></div>` : ''}
   ${secH(`${cap1(sp.unit)} tiếp theo`, `<button class="link tiny" data-act="atab" data-t="sessions">Xem tất cả</button>`)}
@@ -370,6 +383,7 @@ function vSession() {
   const { shares, per, total, surplus } = sessShares(c, s);
   const members = activeMembers(c).concat(c.members.filter(m => m.active === false && s.attendees.includes(m.id)));
   const rs = s.rsvp || {};
+  const vt = voteOf(c, s);
   const order = m => (s.attendees.includes(m.id) ? 0 : rs[m.id] === 'yes' ? 1 : rs[m.id] === 'no' ? 3 : 2);
   const sorted = members.slice().sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name, 'vi'));
   const charges = c.charges.filter(x => x.ref === s.id);
@@ -381,10 +395,12 @@ function vSession() {
     <div class="row wrap">${open ? `<button class="btn xs ghost" data-act="editSession">✏️ Sửa thông tin</button>` : ''}<button class="btn xs ghost" data-act="copyAnnounce">📋 Chép thông báo</button></div>
   </section>
 
+  ${open ? voteSection(c, s) : ''}
+
   <section class="card stack">
-    ${secH(`Điểm danh · ${s.attendees.length}${(s.guests || []).length ? ' + ' + s.guests.length + ' khách' : ''}`, open ? `<button class="link tiny" data-act="attFromRsvp">Lấy theo đăng ký</button>` : '')}
+    ${secH(`Điểm danh · ${s.attendees.length}${(s.guests || []).length ? ' + ' + s.guests.length + ' khách' : ''}`, open ? `<button class="link tiny" data-act="attFromRsvp">Điểm danh theo vote</button>` : '')}
     <div class="stack" style="gap:8px">${sorted.map(m => { const on = s.attendees.includes(m.id); const r = rs[m.id];
-      return `<button class="check ${on ? 'on' : ''}" ${open ? `data-act="toggleAtt" data-mid="${m.id}"` : 'disabled'}><span class="box">${on ? '✓' : ''}</span>${ava(m, 'sm')}<span class="grow"><b class="ellip" style="display:block">${esc(m.name)}</b><span class="lv">${lvStars(m.level)}</span></span>${r === 'yes' ? '<span class="pill ok">Đăng ký</span>' : r === 'no' ? '<span class="pill bad">Báo vắng</span>' : ''}${!open && shares[m.id] ? `<b class="num tiny">${vnd(shares[m.id])}</b>` : ''}</button>`; }).join('')}</div>
+      return `<button class="check ${on ? 'on' : ''}" ${open ? `data-act="toggleAtt" data-mid="${m.id}"` : 'disabled'}><span class="box">${on ? '✓' : ''}</span>${ava(m, 'sm')}<span class="grow"><b class="ellip" style="display:block">${esc(m.name)}</b><span class="lv">${lvStars(m.level)}</span></span>${r === 'yes' ? (vt.wait.includes(m.id) ? '<span class="pill warn">Dự bị</span>' : '<span class="pill ok">Vote đi</span>') : r === 'no' ? '<span class="pill bad">Không đi</span>' : ''}${!open && shares[m.id] ? `<b class="num tiny">${vnd(shares[m.id])}</b>` : ''}</button>`; }).join('')}</div>
     ${(s.guests || []).length ? `<div class="list">${s.guests.map((g, i) => `<div class="item"><span class="ava sm">👤</span><span class="tx"><b>${esc(g.name)}</b><span class="tiny muted b">Khách · ${g.host ? 'tính vào ' + esc((memberOf(c, g.host) || {}).name || '') : 'trả tại chỗ'}</span></span>${open ? `<button class="btn xs danger" data-act="delGuest" data-i="${i}">Xóa</button>` : ''}</div>`).join('')}</div>` : ''}
     ${open ? `<button class="btn sm ghost" data-act="guestSheet">＋ Thêm khách vãng lai</button>` : ''}
   </section>
@@ -429,6 +445,33 @@ function vSession() {
   ${s.status === 'cancelled' ? `<div class="grid2"><button class="btn sm ghost" data-act="reopenSession">↺ Mở lại</button><button class="btn sm danger" data-act="delSession">🗑 Xóa</button></div>` : ''}
   ${UI.confirm ? confirmBox() : ''}`;
 }
+/* khung vote cho quản trị: ghi nhận vote (kể cả vote nhận qua Zalo), chép lời mời và kết quả */
+function voteSection(c, s) {
+  const vt = voteOf(c, s); const rs = s.rsvp || {};
+  const rank = id => vt.going.includes(id) ? 0 : vt.wait.includes(id) ? 1 : rs[id] === 'no' ? 3 : 2;
+  const ids = [...vt.yes, ...vt.none, ...vt.no].sort((a, b) => rank(a) - rank(b));
+  return `<section class="card stack">
+    ${secH('🗳️ Vote đi / không đi')}
+    <div class="grid3">
+      <div class="kpi"><div class="k">Đi</div><div class="v ok-t">${vt.going.length}${vt.max ? `<small class="tiny faint">/${vt.max}</small>` : ''}</div>${vt.wait.length ? `<div class="d">+${vt.wait.length} dự bị</div>` : ''}</div>
+      <div class="kpi"><div class="k">Không đi</div><div class="v bad-t">${vt.no.length}</div></div>
+      <div class="kpi"><div class="k">Chưa vote</div><div class="v">${vt.none.length}</div></div>
+    </div>
+    <div class="grid2"><button class="btn sm volt" data-act="copyVoteInvite">📣 Chép lời mời vote</button><button class="btn sm ghost" data-act="copyVoteResult">📋 Chép kết quả</button></div>
+    <details data-k="votes" ${UI.voteOpen === false ? '' : 'open'}><summary class="b tiny" style="cursor:pointer;padding:4px 0">Ghi vote hộ hội viên (khi họ trả lời qua Zalo)</summary>
+      <div class="list" style="margin-top:6px">${ids.map(id => { const m = memberOf(c, id); if (!m) return ''; const r = rs[id];
+        return `<div class="item">${ava(m, 'sm')}<span class="tx"><b>${esc(m.name)}</b><span class="tiny b ${vt.wait.includes(id) ? 'warn-t' : r === 'yes' ? 'ok-t' : r === 'no' ? 'bad-t' : 'faint'}">${vt.wait.includes(id) ? '⏳ Dự bị ' + (vt.wait.indexOf(id) + 1) : r === 'yes' ? '✅ Đi' : r === 'no' ? '❌ Không đi' : 'Chưa vote'}</span></span>
+          <button class="btn xs ${r === 'yes' ? 'ok' : 'ghost'}" data-act="adminVote" data-mid="${id}" data-r="yes" aria-label="${esc(m.name)} đi">✅</button><button class="btn xs ${r === 'no' ? 'danger' : 'ghost'}" data-act="adminVote" data-mid="${id}" data-r="no" aria-label="${esc(m.name)} không đi">❌</button></div>`; }).join('')}</div></details>
+    <p class="tiny muted b">Hội viên vote trong link xem nhanh: app soạn sẵn tin để họ gửi vào nhóm, bạn ghi lại ở đây. ${vt.max ? 'Ai vote “Đi” trước được giữ chỗ trước.' : ''}</p>
+  </section>`;
+}
+function bulkSheet() {
+  return `<form class="stack" data-form="bulk"><h2 class="h2 disp">＋ Thêm nhiều người</h2>
+    <div class="field"><label for="bk-names">Mỗi dòng một tên</label><textarea class="input" id="bk-names" name="names" rows="8" placeholder="Minh Quân\nThu Lan\nHoàng Nam" autofocus style="min-height:180px"></textarea></div>
+    <p class="tiny muted b">Mỗi người được tạo mã PIN 4 số ngẫu nhiên, trình độ 3★. Sửa từng người sau trong tab Hội viên. Dán được danh sách chép từ Zalo hay Excel.</p>
+    ${UI.err ? `<p class="err">${esc(UI.err)}</p>` : ''}
+    <button class="btn block" type="submit">Thêm vào hội</button></form>`;
+}
 function confirmBox() {
   const t = { delSession: 'Xóa buổi này cùng toàn bộ công nợ đã tạo từ buổi?', reopenSession: 'Mở lại sẽ xóa các khoản công nợ của buổi này (kể cả khoản đã thu) để chốt lại. Tiếp tục?', cancelSession: 'Hủy buổi này? Hội viên sẽ thấy trạng thái Đã hủy.' }[UI.confirm] || 'Bạn chắc chứ?';
   return `<div class="note warn stack" style="gap:8px;position:sticky;bottom:12px;box-shadow:var(--shadow)"><b>${t}</b><div class="row"><button class="btn sm danger" data-act="doConfirm">Đồng ý</button><button class="btn sm ghost" data-act="cancelConfirm">Thôi</button></div></div>`;
@@ -440,6 +483,7 @@ function sessionFormSheet(c, s) {
     <h2 class="h2 disp">${isNew ? '＋ Tạo ' + sp.unit : 'Sửa thông tin'}</h2>
     <div class="grid2"><div class="field"><label for="s-date">Ngày</label><input class="input" id="s-date" name="date" type="date" value="${esc(s.date)}" required></div><div class="field"><label for="s-time">Giờ</label><input class="input" id="s-time" name="time" type="time" value="${esc(s.time)}"></div></div>
     <div class="field"><label for="s-venue">${sp.place}</label><input class="input" id="s-venue" name="venue" value="${esc(s.venue)}" placeholder="VD: Sân 3-4, nhà thi đấu…"></div>
+    <div class="field"><label for="s-max">Số chỗ tối đa (không bắt buộc)</label><input class="input num" id="s-max" name="max" inputmode="numeric" value="${s.max ? esc(s.max) : ''}" placeholder="Để trống = không giới hạn. Vote quá số chỗ sẽ vào dự bị"></div>
     <div class="field"><label for="s-note">Ghi chú cho hội viên</label><textarea class="input" id="s-note" name="note" placeholder="VD: Mang áo trắng, có giao lưu…">${esc(s.note || '')}</textarea></div>
     ${isNew ? `<p class="tiny muted b">Chi phí gợi ý cho ${esc(sp.name)}: ${sp.costs.map(esc).join(', ')}. Bạn nhập số tiền sau trong màn hình buổi.</p>` : ''}
     ${UI.err ? `<p class="err">${esc(UI.err)}</p>` : ''}
@@ -515,6 +559,7 @@ function vAMembers(c) {
   const q = noTone(UI.q || '').toLowerCase();
   const list = c.members.filter(m => !q || noTone(m.name).toLowerCase().includes(q)).sort((a, b) => (a.active === false) - (b.active === false) || a.name.localeCompare(b.name, 'vi'));
   return `<div class="row"><input class="input grow" placeholder="🔎 Tìm hội viên…" value="${esc(UI.q || '')}" data-chg="search" aria-label="Tìm hội viên"><button class="btn" data-act="memberSheet">＋ Thêm</button></div>
+  <button class="link tiny" style="align-self:flex-start" data-act="bulkSheet">＋ Thêm nhiều người cùng lúc (dán danh sách tên)</button>
   <section class="card stack">${secH(`${activeMembers(c).length} hội viên`, `<button class="link tiny" data-act="copyPins">📋 Chép danh sách PIN</button>`)}
     ${list.length ? `<div class="list">${list.map(m => `<button class="item" data-act="memberSheet" data-mid="${m.id}" style="${m.active === false ? 'opacity:.5' : ''}">${ava(m)}<span class="tx"><b>${esc(m.name)}${m.active === false ? ' · đã nghỉ' : ''}</b><span class="tiny muted b"><span class="lv">${lvStars(m.level)}</span> · ${attended(c, m.id)} ${sportOf(c).unit}${m.phone ? ' · ' + esc(m.phone) : ''}</span></span>${debtOf(c, m.id) ? `<span class="pill bad">${vndShort(debtOf(c, m.id))}</span>` : '<span class="pill ok">0đ</span>'}</button>`).join('')}</div>` : empty('👥', 'Chưa có hội viên. Bấm ＋ Thêm để bắt đầu.')}
   </section>`;
@@ -529,7 +574,8 @@ function memberSheet(c, m) {
     <div class="field"><span class="lbl">Trình độ (dùng khi chia đội cân bằng)</span><div class="chips">${[1, 2, 3, 4, 5].map(l => `<label class="chip ${Number(m.level) === l ? 'on' : ''}" style="cursor:pointer"><input type="radio" name="level" value="${l}" ${Number(m.level) === l ? 'checked' : ''} hidden data-chg="radioChip">${'★'.repeat(l)}</label>`).join('')}</div></div>
     <div class="field"><span class="lbl">Ảnh đại diện</span><input type="hidden" name="avatar" value="${esc(sel)}"><div class="chips">${AVATARS.map(a => `<button type="button" class="chip ${sel === a ? 'on' : ''}" style="font-size:20px;padding:0 9px" data-act="pickAvatar" data-a="${a}">${a}</button>`).join('')}</div></div>
     ${UI.err ? `<p class="err">${esc(UI.err)}</p>` : ''}
-    <button class="btn block" type="submit">${isNew ? 'Thêm vào hội' : 'Lưu thay đổi'}</button>
+    ${isNew ? `<div class="grid2"><button class="btn" type="submit" name="next" value="1">＋ Thêm & nhập tiếp</button><button class="btn navy" type="submit">Thêm & đóng</button></div>
+      <button type="button" class="link tiny" style="align-self:center" data-act="bulkSheet">Thêm nhiều người cùng lúc</button>` : `<button class="btn block" type="submit">Lưu thay đổi</button>`}
     ${isNew ? '' : `<div class="grid2"><button type="button" class="btn sm ghost" data-act="toggleActive" data-mid="${m.id}">${m.active === false ? '↺ Cho quay lại' : '⏸ Cho nghỉ'}</button><button type="button" class="btn sm danger" data-act="delMember" data-mid="${m.id}">🗑 Xóa hẳn</button></div>
       ${UI.confirm === 'delMember' ? `<div class="note warn stack" style="gap:8px">Xóa ${esc(m.name)} và toàn bộ công nợ của người này?<div class="row"><button type="button" class="btn sm danger" data-act="doDelMember" data-mid="${m.id}">Xóa</button><button type="button" class="btn sm ghost" data-act="cancelConfirm">Thôi</button></div></div>` : ''}
       <p class="tiny muted b">Tham gia ${attended(c, m.id)} ${sportOf(c).unit} · đã trả ${vnd(paidTotal(c, m.id))} · còn nợ ${vnd(debtOf(c, m.id))}</p>`}
@@ -581,14 +627,26 @@ function vASettings(c) {
 }
 
 /* ---------- link xem nhanh (chỉ đọc) ---------- */
+/* buổi sắp tới trong link: bản mới là object có danh sách vote, bản cũ là mảng [ngày, giờ, sân, số người] */
+const sharedUps = d => (d.up || []).map(u => Array.isArray(u)
+  ? { date: u[0], time: u[1], venue: u[2], yes: [], no: [], max: 0 }
+  : { date: u.d, time: u.t, venue: u.v, yes: u.y || [], no: u.n || [], max: u.mx || 0 });
 function vShared() {
   const d = UI.shared; if (!d) return vWelcome();
   const sp = sportOf(d); const m = d.m.find(x => x[0] === UI.sharedMid);
   const head = `<header class="apphead" style="margin-bottom:0"><div class="top"><span class="crest">${sp.ic}</span><div class="grow"><div class="s">${esc(sp.name)} · Bản xem nhanh</div><div class="t ellip">${esc(d.n)}</div></div>${UI.sharedPreview ? '<button class="hbtn" data-act="closePreview">✕ Đóng</button>' : ''}</div></header>`;
-  const upHtml = (d.up || []).map(([date, time, venue, n]) => { const dd = parseDay(date); return `<div class="sess"><span class="date"><span class="w">${WD[dd.getDay()]}</span><span class="d">${pad2(dd.getDate())}</span><span class="m">Th${dd.getMonth() + 1}</span></span><span class="tx"><b>${sp.ic} ${cap1(sp.unit)} ${esc(time)}</b><span class="tiny muted b ellip">📍 ${esc(venue)}</span><span class="tiny faint b">${n} người đăng ký${relDay(date) ? ' · ' + relDay(date) : ''}</span></span></div>`; }).join('');
+  const ups = sharedUps(d);
+  const nm = id => (d.m.find(y => y[0] === id) || [id, '?'])[1];
+  const sessBox = (u, i, mine) => { const dd = parseDay(u.date); const going = u.max ? u.yes.slice(0, u.max) : u.yes, wait = u.max ? u.yes.slice(u.max) : [];
+    const myV = mine ? (u.yes.includes(mine) ? (wait.includes(mine) ? 'wait' : 'yes') : u.no.includes(mine) ? 'no' : '') : '';
+    return `<div class="stack" style="gap:8px"><div class="sess"><span class="date"><span class="w">${WD[dd.getDay()]}</span><span class="d">${pad2(dd.getDate())}</span><span class="m">Th${dd.getMonth() + 1}</span></span><span class="tx"><b>${sp.ic} ${cap1(sp.unit)} ${esc(u.time)}</b>${u.venue ? `<span class="tiny muted b ellip">📍 ${esc(u.venue)}</span>` : ''}<span class="tiny faint b">✅ ${going.length}${u.max ? '/' + u.max : ''} đi${wait.length ? ` · ⏳ ${wait.length} dự bị` : ''} · ❌ ${u.no.length} không${relDay(u.date) ? ' · ' + relDay(u.date) : ''}</span></span></div>
+      ${going.length ? `<p class="tiny muted b">Đi: ${going.map(id => esc(nm(id))).join(', ')}${wait.length ? ` · Dự bị: ${wait.map(id => esc(nm(id))).join(', ')}` : ''}</p>` : ''}
+      ${mine ? `${myV ? `<p class="tiny b ${myV === 'no' ? 'bad-t' : myV === 'wait' ? 'warn-t' : 'ok-t'}">Quản trị đã ghi: ${myV === 'yes' ? '✅ bạn đi' : myV === 'wait' ? '⏳ bạn ở danh sách dự bị' : '❌ bạn không đi'}</p>` : ''}
+        <div class="row" style="gap:8px"><button class="btn sm ok" style="flex:1" data-act="sharedVote" data-i="${i}" data-r="yes">✅ Tôi đi</button><button class="btn sm danger" style="flex:1" data-act="sharedVote" data-i="${i}" data-r="no">❌ Tôi không đi</button></div>` : ''}</div>`; };
+  const upHtml = ups.map((u, i) => sessBox(u, i, null)).join('');
   if (!m) return `${head}
   <div class="note">Cập nhật lúc <b>${fmtTs(d.t)}</b>. Đây là bản chụp quản trị viên gửi, không tự cập nhật.</div>
-  <p class="b">Bạn là ai? Chạm tên để xem số tiền cần trả.</p>
+  <p class="b">Bạn là ai? Chạm tên để vote đi / không đi và xem số tiền cần trả.</p>
   <div class="profiles">${d.m.map(([id, name, avatar]) => { const debt = (d.d[id] || []).reduce((a, x) => a + x[1], 0); return `<button class="prof" data-act="sharedPick" data-mid="${id}">${ava({ id, avatar }, 'lg')}<span class="n">${esc(name)}</span>${debt ? `<span class="pill bad">Nợ ${vndShort(debt)}</span>` : '<span class="pill ok">Sạch nợ</span>'}</button>`; }).join('')}</div>
   ${upHtml ? secH('Lịch sắp tới') + upHtml : ''}
   ${(d.r || []).length ? `<section class="card stack">${secH('Chăm chỉ tháng này')}<div>${d.r.slice(0, 10).map(([id, n], i) => { const x = d.m.find(y => y[0] === id) || [id, '?', '🙂']; return `<div class="rank"><span class="no">${i + 1}</span>${ava({ id, avatar: x[2] }, 'sm')}<b class="grow ellip">${esc(x[1])}</b><span class="pill sport">${n} ${sp.unit}</span></div>`; }).join('')}</div></section>` : ''}
@@ -597,6 +655,7 @@ function vShared() {
   return `${head}
   <div class="row"><button class="x" data-act="sharedPick" data-mid="" aria-label="Quay lại">←</button><span class="muted tiny b">Cập nhật ${fmtTs(d.t)}</span></div>
   <section class="card stack" style="align-items:center;text-align:center">${ava({ id, avatar }, 'lg')}<h2 class="h2">${esc(name)}</h2><p class="b ${debt ? 'bad-t' : 'ok-t'}" style="font-size:20px">${debt ? 'Cần trả ' + vnd(debt) : 'Đã trả đủ 🎉'}</p></section>
+  ${ups.length ? `<section class="card stack">${secH('🗳️ Vote buổi sắp tới')}${ups.map((u, i) => sessBox(u, i, id)).join('<div class="divider"></div>')}<p class="tiny muted b">Bấm vote, app chép sẵn tin nhắn. Dán vào nhóm Zalo để quản trị viên ghi nhận.</p></section>` : ''}
   ${items.length ? `<section class="card stack">${secH('Chi tiết')}<div class="list">${items.map(([l, a]) => `<div class="item"><span class="tx"><b>${esc(l)}</b></span><span class="amt">${vnd(a)}</span></div>`).join('')}</div></section>` : ''}
   ${debt && d.b && d.b.bin ? `<section class="card stack">${secH('Chuyển khoản VietQR')}${qrBlock({ bin: d.b.bin, acct: d.b.acct, holder: d.b.holder, amount: debt, note: transferNote({ name: d.n }, name) })}</section>` : ''}
   <p class="foot">Sau khi chuyển khoản, quản trị viên sẽ gạch nợ ở lần cập nhật sau.</p>`;

@@ -147,6 +147,22 @@ function streakOf(c, mid) { // số buổi liên tiếp gần nhất có mặt
   for (const s of ss) { if (s.attendees.includes(mid)) n++; else break; }
   return n;
 }
+/* ===== vote đi / không đi =====
+   s.rsvp = { mid: 'yes' | 'no' }, s.rsvpAt = { mid: thời điểm vote } — ai vote "Đi" trước giữ chỗ trước khi buổi có giới hạn số người (s.max). */
+function voteOf(c, s) {
+  const rs = s.rsvp || {}, at = s.rsvpAt || {};
+  const ids = c.members.filter(m => m.active !== false || rs[m.id]).map(m => m.id);
+  const yes = ids.filter(id => rs[id] === 'yes').sort((a, b) => (at[a] || 0) - (at[b] || 0));
+  const no = ids.filter(id => rs[id] === 'no');
+  const none = ids.filter(id => !rs[id] && (memberOf(c, id) || {}).active !== false);
+  const max = Number(s.max) || 0;
+  return { yes, no, none, max, going: max ? yes.slice(0, max) : yes, wait: max ? yes.slice(max) : [] };
+}
+function setVote(s, mid, r) { // bấm lại đúng lựa chọn đang chọn = bỏ vote
+  s.rsvp ||= {}; s.rsvpAt ||= {};
+  if (!r || s.rsvp[mid] === r) { delete s.rsvp[mid]; delete s.rsvpAt[mid]; return null; }
+  s.rsvp[mid] = r; s.rsvpAt[mid] = Date.now(); return r;
+}
 const upcoming = c => c.sessions.filter(s => s.status === 'open' && s.date >= dayKey()).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 const sessCost = s => (s.costs || []).reduce((a, x) => a + (Number(x.amount) || 0), 0);
 const sessHeads = s => s.attendees.length + (s.guests || []).length;
