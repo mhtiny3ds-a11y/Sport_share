@@ -199,6 +199,7 @@ function dropClub(id) {
 function startCloud(user) {
   stopCloud();
   ME = user; CLUBS_LOADED = false;
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch (e) {}
   clubsOff = CLOUD.watchClubs(user.uid, onClubs, e => { console.warn(e); toast('Không tải được dữ liệu: ' + (e.code || e.message)); });
 }
 function stopCloud() {

@@ -208,6 +208,7 @@ const ACT = {
   authMode: el => go('auth', { authMode: el.dataset.m }),
   googleSignIn: async () => {
     if (!CLOUD) return;
+    if (inAppName()) { UI.err = `${inAppName()} không cho đăng nhập Google. Mở Sport Share bằng ${isIOS() ? 'Safari' : 'Chrome'} (xem hướng dẫn phía trên), hoặc đăng nhập bằng email.`; return render(); }
     UI.busy = true; UI.err = ''; render();
     try { await CLOUD.google(); }
     catch (e) { if (!/popup-closed|cancelled-popup/.test(e.code || '')) UI.err = authMsg(e); }

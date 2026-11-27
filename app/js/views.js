@@ -47,6 +47,26 @@ const roleP = r => r ? `<span class="pill ${r === 'member' ? 'sky' : 'volt'}">${
 const guideLink = () => `<a class="guide" href="../huong-dan-su-dung.pdf?v=4" target="_blank" rel="noopener"><span class="gi" aria-hidden="true">📘</span><span class="grow"><span class="gt">Hướng dẫn sử dụng</span><span class="gs">Đọc trước khi dùng · PDF có hình minh họa</span></span><span class="go"><span class="gol">Mở PDF </span>↗</span></a>`;
 const googleBtn = (label = 'Tiếp tục với Google') => `<button class="btn block gbtn" data-act="googleSignIn" ${UI.busy ? 'disabled' : ''}><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>${label}</button>`;
 
+/* Trình duyệt trong app (Zalo, Facebook, Messenger…): hay xóa đăng nhập khi thoát và bị Google chặn đăng nhập */
+function inAppName() {
+  const ua = navigator.userAgent || '';
+  if (/Zalo/i.test(ua)) return 'Zalo';
+  if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) return /Messenger|MESSENGER/.test(ua) ? 'Messenger' : 'Facebook';
+  if (/Instagram/i.test(ua)) return 'Instagram';
+  if (/\bLine\//i.test(ua)) return 'Line';
+  if (/TikTok|musical_ly|BytedanceWebview/i.test(ua)) return 'TikTok';
+  if (/Telegram/i.test(ua)) return 'Telegram';
+  return '';
+}
+const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function inAppNote() {
+  const n = inAppName(); if (!n) return '';
+  const android = /Android/i.test(navigator.userAgent || '');
+  return `<div class="note warn stack" style="gap:8px;border-left:5px solid var(--warn)"><span>⚠️ <b>Bạn đang mở Sport Share trong ${n}.</b> Trình duyệt này hay <b>xóa đăng nhập mỗi lần thoát</b> và chặn đăng nhập Google. Hãy mở bằng <b>${isIOS() ? 'Safari' : 'Chrome'}</b> để giữ đăng nhập.</span>
+    <span class="tiny b">${isIOS() ? `Cách mở: bấm nút <b>•••</b> (hoặc ⋮) ở góc màn hình → <b>Mở bằng trình duyệt / Open in Safari</b>.` : `Cách mở: bấm nút <b>⋮</b> ở góc màn hình → <b>Mở bằng trình duyệt</b>, hoặc bấm nút dưới.`}</span>
+    <div class="row wrap">${android ? `<a class="btn sm" style="text-decoration:none" href="intent://${location.host}${location.pathname}#Intent;scheme=https;package=com.android.chrome;end">Mở bằng Chrome</a>` : ''}<button class="btn sm ghost" data-act="copy" data-t="${esc(location.origin + location.pathname)}">📋 Chép link</button></div></div>`;
+}
+
 function sessCard(c, s, act = 'openSession') {
   const d = parseDay(s.date), sp = sportOf(c);
   const vt = voteOf(c, s);
@@ -102,6 +122,7 @@ function vWelcome() {
     <p class="tag">Quản lý đội nhóm thể thao: lịch tập, vote đi / không đi, chia tiền sân, công nợ và quỹ hội. Chuyển khoản nhanh bằng VietQR.</p>
     <div class="sportstrip" aria-hidden="true">${Object.values(SPORTS).slice(0, 8).map(s => `<span>${s.ic}</span>`).join('')}</div>
   </section>
+  ${inAppNote()}
   ${guideLink()}
   ${pj}
   ${localClubs().length ? `<div class="note warn">📱 Máy này có <b>${localClubs().length} hội</b> từ bản cũ (${localClubs().map(c => esc(c.name)).join(', ')}). <b>Đăng nhập</b> để đưa lên đám mây, giữ nguyên lịch sử và công nợ.</div>` : ''}
@@ -112,7 +133,7 @@ function vWelcome() {
     <p class="tiny center b">Chưa có tài khoản? <button class="link" data-act="authMode" data-m="register">Đăng ký bằng email</button></p>
     ${err()}
   </section>` : `<div class="note warn">Chưa kết nối được máy chủ đăng nhập. Kiểm tra mạng rồi tải lại trang.</div>`}
-  <button class="choice" data-act="demo"><span class="ic" style="background:var(--warn-soft)">🧪</span><span><b>Chơi thử hội mẫu</b><span class="tiny muted b">Không cần tài khoản · bấm thử vote, chia tiền, công nợ · dữ liệu mẫu không được lưu</span></span></button>
+  <button class="choice" data-act="demo"><span class="ic" style="background:var(--warn-soft)">🧪</span><span><b>Chơi thử hội mẫu</b><span class="tiny muted b">Chỉ để xem thử, <b>thoát ra là mất</b>. Muốn dùng thật: đăng nhập rồi bấm Lập hội mới</span></span></button>
   <p class="foot"><button class="link" data-act="openLegal">Chính sách &amp; Điều khoản</button> · <a class="link" href="../">Giới thiệu Sport Share</a></p>`;
 }
 
@@ -122,6 +143,7 @@ function vAuth() {
   const title = { login: 'Đăng nhập', register: 'Tạo tài khoản', reset: 'Quên mật khẩu' }[m];
   return `${backBtn('goWelcome')}
   <div class="stack" style="gap:4px"><div class="eyebrow">Tài khoản Sport Share</div><h1 class="h1 disp">${title}</h1></div>
+  ${inAppNote()}
   ${m !== 'reset' ? `<section class="card stack">${googleBtn(m === 'register' ? 'Đăng ký nhanh với Google' : 'Tiếp tục với Google')}</section><div class="eyebrow center">hoặc dùng email</div>` : ''}
   <form class="card stack" data-form="auth" data-m="${m}" autocomplete="on">
     ${m === 'register' ? `<div class="field"><label for="a-name">Tên hiển thị</label><input class="input" id="a-name" name="name" autocomplete="name" placeholder="VD: Minh Quân" value="${esc(UI.authName || '')}" required></div>` : ''}
@@ -157,6 +179,7 @@ function vHome() {
   const loading = ME && !CLUBS_LOADED;
   return `<header class="apphead" style="margin-bottom:0"><div class="top">${meAva('lg')}<div class="grow"><div class="s">Xin chào 👋</div><div class="t ellip">${esc(name)}</div></div><button class="hbtn" data-act="go" data-v="account">⚙️ Tài khoản</button></div>
     <div class="stats"><div class="stat"><b>${clubs.length}</b><span>Hội</span></div><div class="stat hot"><b>${soon.length}</b><span>Buổi 14 ngày</span></div><div class="stat"><b>${myDebt ? vndShort(myDebt) : '0đ'}</b><span>Cần trả</span></div></div></header>
+  ${inAppNote()}
   ${localClubs().length ? `<section class="card stack" style="border-left:5px solid var(--warn)"><b>📱 ${localClubs().length} hội cũ còn trên máy này</b><p class="tiny muted b">Hội tạo ở bản cũ chỉ lưu trong trình duyệt, dễ mất và hội viên chưa dùng chung được. Đưa lên đám mây (giữ nguyên lịch sử, công nợ):</p><div class="row wrap">${localClubs().map(c => `<button class="btn sm" data-act="uploadSheet" data-cid="${c.id}">☁️ ${esc(c.name)}</button>`).join('')}</div></section>` : ''}
   ${DEV.joins.length ? DEV.joins.map(j => `<div class="note">⏳ Đã xin vào <b>${esc(j.clubName)}</b>, chờ quản trị duyệt. <button class="link tiny" data-act="cancelJoin" data-cid="${esc(j.clubId)}">Hủy</button></div>`).join('') : ''}
   ${alerts.length ? `<section class="card stack" style="border-left:5px solid var(--brand)">${secH('Việc cần làm')}<div class="list">${alerts.map(([c, t, tab]) => `<button class="item" data-act="openClub" data-cid="${c.id}" data-t="${tab}"><span class="ava sm" style="--ac:color-mix(in srgb,${sportOf(c).c} 18%,var(--surface))">${sportOf(c).ic}</span><span class="tx"><b>${t}</b><span class="tiny muted b">${esc(c.name)}</span></span><span class="faint" style="font-size:22px">›</span></button>`).join('')}</div></section>` : ''}
@@ -260,7 +283,7 @@ function vClub() {
   if (!role(c)) return vHome();
   const html = canAdmin(c) ? vAdmin(c) : vMember(c);
   const i = html.indexOf('</header>') + 9;
-  const banner = c.demo ? `<div class="note warn stack" style="gap:8px"><span>🧪 <b>Đang chơi thử hội mẫu.</b> Dữ liệu mẫu, không được lưu. Bạn là quản trị và đóng vai Minh Quân.</span><div class="row wrap">${ME ? '<button class="btn sm ghost" data-act="exitDemo">← Về trang của tôi</button>' : '<button class="btn sm" data-act="exitDemo">Đăng nhập để lập hội thật</button>'}</div></div>`
+  const banner = c.demo ? `<div class="note warn stack" style="gap:8px"><span>🧪 <b>Đang chơi thử hội mẫu.</b> Dữ liệu mẫu, <b>thoát ra là mất</b>, đừng nhập hội thật ở đây. Bạn là quản trị và đóng vai Minh Quân.</span><div class="row wrap">${ME ? '<button class="btn sm ghost" data-act="exitDemo">← Về trang của tôi</button>' : '<button class="btn sm" data-act="exitDemo">Đăng nhập để lập hội thật</button>'}</div></div>`
     : !isCloud(c) ? `<div class="note warn stack" style="gap:8px"><span>📱 <b>Hội cũ trên máy này</b>: dễ mất khi xóa dữ liệu trình duyệt, hội viên chưa dùng chung được.</span><button class="btn sm" data-act="uploadSheet" data-cid="${c.id}">☁️ Đưa lên đám mây</button></div>` : '';
   return html.slice(0, i) + banner + html.slice(i);
 }
