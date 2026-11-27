@@ -68,7 +68,7 @@ function inAppNote() {
 }
 
 /* Fanpage: thẻ tự vẽ, khung Facebook chỉ tải khi người dùng bấm (không cookie Facebook nếu không bấm) */
-const FANPAGE = 'https://www.facebook.com/profile.php?id=61597237160150';
+const FANPAGE = 'https://www.facebook.com/sportsharepro/';
 function fanpageBox() {
   const feed = UI.fbOn ? `<iframe title="Bài viết Fanpage Sport Share" src="https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(FANPAGE)}&tabs=timeline&width=500&height=520&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true" loading="lazy" allow="encrypted-media"></iframe>`
     : `<div class="feed"><button type="button" data-act="fbLoad">Xem bài viết mới ngay tại đây</button><br>Khung Facebook chỉ tải khi bạn bấm.</div>`;

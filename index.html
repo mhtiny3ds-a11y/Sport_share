@@ -239,6 +239,7 @@ footer a:hover{color:var(--brand)}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
 .reveal.in{opacity:1;transform:none}
 </style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Sport Share","url":"https://sportshare.pro.vn/","logo":"https://sportshare.pro.vn/icon.svg","sameAs":["https://www.facebook.com/sportsharepro/"]}</script>
 </head>
 <body>
 
@@ -448,9 +449,9 @@ footer a:hover{color:var(--brand)}
   <div class="wrap">
     <div class="sh reveal"><span class="eyebrow o"><span>Cộng đồng</span></span><h2 class="disp">Theo dõi Sport Share trên Facebook</h2><p>Mẹo dùng app, tính năng mới và câu chuyện từ các hội. Góp ý, báo lỗi cứ nhắn Fanpage nhé.</p></div>
     <div class="fbbox reveal" id="fbbox">
-      <a class="cv" href="https://www.facebook.com/profile.php?id=61597237160150" target="_blank" rel="noopener" aria-label="Ảnh bìa Fanpage Sport Share" style="background-image:url(img/fb-cover.jpg)"></a>
-      <a class="pg" href="https://www.facebook.com/profile.php?id=61597237160150" target="_blank" rel="noopener"><img src="icon.svg" alt=""><span><b>Sport Share - App chia tiền miễn phí</b><small>Fanpage chính thức · Facebook</small></span></a>
-      <div class="bt"><a class="fb" href="https://www.facebook.com/profile.php?id=61597237160150" target="_blank" rel="noopener">👍 Theo dõi</a><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsportshare.pro.vn%2F" target="_blank" rel="noopener">↗ Chia sẻ</a></div>
+      <a class="cv" href="https://www.facebook.com/sportsharepro/" target="_blank" rel="noopener" aria-label="Ảnh bìa Fanpage Sport Share" style="background-image:url(img/fb-cover.jpg)"></a>
+      <a class="pg" href="https://www.facebook.com/sportsharepro/" target="_blank" rel="noopener"><img src="icon.svg" alt=""><span><b>Sport Share - App chia tiền miễn phí</b><small>Fanpage chính thức · Facebook</small></span></a>
+      <div class="bt"><a class="fb" href="https://www.facebook.com/sportsharepro/" target="_blank" rel="noopener">👍 Theo dõi</a><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsportshare.pro.vn%2F" target="_blank" rel="noopener">↗ Chia sẻ</a></div>
       <div class="feed" id="fbfeed"><button type="button" id="fbload">Xem bài viết mới ngay tại đây</button><br>Khung Facebook chỉ tải khi bạn bấm.</div>
     </div>
   </div>
@@ -487,7 +488,7 @@ footer a:hover{color:var(--brand)}
     <nav aria-label="Liên kết cuối trang">
       <a data-app="" href="app/">Mở ứng dụng</a>
       <a href="huong-dan-su-dung.pdf?v=4" target="_blank" rel="noopener">Hướng dẫn sử dụng</a>
-      <a href="https://www.facebook.com/profile.php?id=61597237160150" target="_blank" rel="noopener">Fanpage</a>
+      <a href="https://www.facebook.com/sportsharepro/" target="_blank" rel="noopener">Fanpage</a>
       <a data-app="#legal" href="app/#legal">Riêng tư & Điều khoản</a>
     </nav>
   </div>
@@ -501,7 +502,7 @@ footer a:hover{color:var(--brand)}
   if (/^#(s=|register$|demo$|admin$|members$|legal$)/.test(location.hash)) { location.replace(base + location.hash); return; }
   document.querySelectorAll('[data-app]').forEach(function (a) { a.href = base + a.getAttribute('data-app'); });
   var fbl = document.getElementById('fbload');
-  if (fbl) fbl.onclick = function () { var u = 'https://www.facebook.com/plugins/page.php?href=' + encodeURIComponent('https://www.facebook.com/profile.php?id=61597237160150') + '&tabs=timeline&width=500&height=520&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true'; document.getElementById('fbfeed').outerHTML = '<iframe title="Bài viết Fanpage Sport Share" src="' + u + '" loading="lazy" allow="encrypted-media"></iframe>'; };
+  if (fbl) fbl.onclick = function () { var u = 'https://www.facebook.com/plugins/page.php?href=' + encodeURIComponent('https://www.facebook.com/sportsharepro/') + '&tabs=timeline&width=500&height=520&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true'; document.getElementById('fbfeed').outerHTML = '<iframe title="Bài viết Fanpage Sport Share" src="' + u + '" loading="lazy" allow="encrypted-media"></iframe>'; };
 
   var S = [['🏸','Cầu lông','#0FA37F','Ghép cặp'],['⚽','Bóng đá','#16A34A','Chia đội'],['🥎','Pickleball','#D97706','Ghép cặp'],['🎾','Tennis','#65A30D','Ghép cặp'],['🏓','Bóng bàn','#DC2626','Ghép cặp'],['🏐','Bóng chuyền','#2563EB','Chia đội'],['🏀','Bóng rổ','#EA580C','Chia đội'],['🏃','Chạy bộ','#E11D48','Chia nhóm'],['🚴','Đạp xe','#0891B2','Chia nhóm'],['🏊','Bơi lội','#0284C7','Chia nhóm'],['🏋️','Gym','#7C3AED','Chia nhóm'],['⛳','Golf','#15803D','Chia nhóm'],['♟️','Cờ','#475569','Ghép cặp'],['🏅','Môn khác','#FF5A1F','Tự đặt tên']];
   var g = document.getElementById('sportsGrid');
